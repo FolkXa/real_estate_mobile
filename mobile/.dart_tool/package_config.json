@@ -74,6 +74,12 @@
       "languageVersion": "2.18"
     },
     {
+      "name": "country_pickers",
+      "rootUri": "file:///Users/jirakit.c/.pub-cache/hosted/pub.dev/country_pickers-3.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
       "name": "crypto",
       "rootUri": "file:///Users/jirakit.c/.pub-cache/hosted/pub.dev/crypto-3.0.6",
       "packageUri": "lib/",
@@ -524,7 +530,7 @@
       "languageVersion": "3.6"
     }
   ],
-  "generated": "2025-02-07T12:24:19.835698Z",
+  "generated": "2025-02-15T20:10:20.806661Z",
   "generator": "pub",
   "generatorVersion": "3.6.1",
   "flutterRoot": "file:///Users/jirakit.c/development/flutter",

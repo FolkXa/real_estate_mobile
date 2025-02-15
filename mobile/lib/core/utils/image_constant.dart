@@ -4,6 +4,7 @@ class ImageConstant {
   static String imagePath = 'assets/images';
 
   // Common images
+  static String imgMainLogo = '$imagePath/logo.png';
   static String imgSettings = '$imagePath/img_settings.svg';
   static String imgEyeoff = '$imagePath/img_eyeoff.svg';
   static String imgGoogle = '$imagePath/img_google.svg';

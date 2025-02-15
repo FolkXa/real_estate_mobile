@@ -20,7 +20,9 @@ class CustomTextFormField extends StatelessWidget {
   final TextStyle? hintStyle;
   final Widget? prefix;
   final BoxConstraints? prefixConstraints;
+  final Widget? prefixIcon;
   final Widget? suffix;
+  final Widget? suffixIcon;
   final BoxConstraints? suffixConstraints;
   final EdgeInsets? contentPadding;
   final InputBorder? borderDecoration;
@@ -48,7 +50,9 @@ class CustomTextFormField extends StatelessWidget {
     this.hintStyle,
     this.prefix,
     this.prefixConstraints,
+    this.prefixIcon,
     this.suffix,
+    this.suffixIcon,
     this.suffixConstraints,
     this.contentPadding,
     this.borderDecoration,
@@ -71,6 +75,7 @@ class CustomTextFormField extends StatelessWidget {
         width: width ?? double.maxFinite,
         decoration: boxDecoration,
         child: TextFormField(
+          readOnly: readOnly,
           scrollPadding: scrollPadding ??
               EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           controller: controller,
@@ -85,7 +90,6 @@ class CustomTextFormField extends StatelessWidget {
           autofocus: autofocus,
           style: textStyle ?? theme.textTheme.titleSmall,
           obscureText: obscureText,
-          readOnly: readOnly,
           onTap: () {
             onTap?.call();
           },
@@ -100,9 +104,10 @@ class CustomTextFormField extends StatelessWidget {
   InputDecoration get decoration => InputDecoration(
         hintText: hintText ?? '',
         hintStyle: hintStyle ?? theme.textTheme.titleSmall,
-        prefixIcon: prefix,
-        prefixIconConstraints: prefixConstraints,
-        suffixIcon: suffix,
+        prefixIcon: prefixIcon,
+        prefix: prefix,
+        suffix: suffix,
+        suffixIcon: suffixIcon,
         suffixIconConstraints: suffixConstraints,
         isDense: true,
         contentPadding: contentPadding ?? EdgeInsets.all(12.h),
@@ -134,3 +139,6 @@ class CustomTextFormField extends StatelessWidget {
             ),
       );
 }
+
+
+

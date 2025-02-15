@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:real_estate_project/widgets/main_logo.dart';
 import '../../../core/app_export.dart';
 import '../../../theme/custom_button_style.dart';
 import '../../../widgets/custom_outlined_button.dart';
@@ -37,28 +38,23 @@ class LoginVersionOneScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _buildLogoSection(context),
+                  Align(
+                    alignment: Alignment.center,
+                    child: MainLogo(),
+                  ),
                   SizedBox(height: 32.h),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: SizedBox(
-                      width: 216.h,
+                      width: double.maxFinite,
                       child: Text(
                         "msg_sign_in_to_your".tr,
                         maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.headlineLarge!.copyWith(
-                          height: 1.30,
-                        ),
+                        // overflow: TextOverflow.visible,
+                        style: TextStyle(
+                          fontSize: 28.h
+                        )
                       ),
-                    ),
-                  ),
-                  SizedBox(height: 10.h),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "msg_enter_your_email".tr,
-                      style: CustomTextStyles.labelLargeInterGray600,
                     ),
                   ),
                   SizedBox(height: 32.h),
@@ -99,11 +95,10 @@ class LoginVersionOneScreen extends StatelessWidget {
                     text: "msg_continue_with_facebook".tr,
                     leftIcon: Container(
                       margin: EdgeInsets.only(right: 10.h),
-                      child: CustomImageView(
-                        imagePath: ImageConstant.img2021facebookicon1,
-                        height: 18.h,
-                        width: 18.h,
-                        fit: BoxFit.contain,
+                      child: Icon(
+                        Icons.facebook,
+                        color: Color(0xFF1877F2),
+                        size: 24.h,
                       ),
                     ),
                   ),
@@ -116,9 +111,16 @@ class LoginVersionOneScreen extends StatelessWidget {
                         "msg_don_t_have_an_account".tr,
                         style: CustomTextStyles.labelLargeInterGray600,
                       ),
-                      Text(
-                        "lbl_sign_up".tr,
-                        style: CustomTextStyles.labelLargeInterRedA200,
+                      GestureDetector(
+                        onTap: () {
+                          NavigatorService.pushNamed(
+                            AppRoutes.signUpScreen
+                          );
+                        },
+                        child: Text(
+                          "lbl_sign_up".tr,
+                          style: CustomTextStyles.labelLargeInterRedA200,
+                        ),
                       ),
                     ],
                   ),
@@ -130,15 +132,6 @@ class LoginVersionOneScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  CustomImageView Icon() {
-    return CustomImageView(
-                      imagePath: ImageConstant.imgGoogle,
-                      height: 18.h,
-                      width: 18.h,
-                      fit: BoxFit.contain,
-                    );
   }
 }
 /// Section Widget
@@ -185,7 +178,7 @@ Widget _buildEmailInputSection(BuildContext context) {
           builder: (context, emailthreeController) {
             return CustomTextFormField(
               controller: emailthreeController,
-              hintText: "msg_loisbecket_gmail_com".tr,
+              hintText: "lbl_email".tr,
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 14.h,
                 vertical: 12.h,
@@ -214,9 +207,9 @@ Widget _buildPasswordInputSection(BuildContext context) {
           builder: (context, state) {
             return CustomTextFormField(
               controller: state.passwordController,
-              hintText: "lbl".tr,
+              hintText: "lbl_password".tr,
               textInputAction: TextInputAction.done,
-              suffix: InkWell(
+              suffixIcon: InkWell(
                 onTap: () {
                   context.read<LoginVersionOneBloc>().add(
                     ChangePasswordVisibilityEvent(
@@ -233,9 +226,6 @@ Widget _buildPasswordInputSection(BuildContext context) {
                     fit: BoxFit.contain,
                   ),
                 ),
-              ),
-              suffixConstraints: BoxConstraints(
-                maxHeight: 46.h,
               ),
               obscureText: state.isShowPassword,
               contentPadding: EdgeInsets.symmetric(

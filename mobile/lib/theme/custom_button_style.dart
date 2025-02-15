@@ -64,7 +64,7 @@ class CustomButtonStyles {
           BoxShadow(
             color: appTheme.indigoA400,
             spreadRadius: 2.h,
-            blurRadius: 2.h,
+            // blurRadius: 2.h,
             offset: Offset(0, 0),
           ),
         ],

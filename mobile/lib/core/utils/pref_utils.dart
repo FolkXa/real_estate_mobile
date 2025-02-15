@@ -28,9 +28,9 @@ class PrefUtils {
 
   String getThemeData() {
     try {
-      return _sharedPreferences!.getString('themeData')!;
+      return _sharedPreferences!.getString('themeData') ?? 'pink-white';
     } catch (e) {
-      return 'primary';
+      return 'pink-white';
     }
   }
 }
