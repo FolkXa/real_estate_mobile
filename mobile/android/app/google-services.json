@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "266614568627",
+    "project_id": "pj-realestate",
+    "storage_bucket": "pj-realestate.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:266614568627:android:042069257b56d65dffa2c6",
+        "android_client_info": {
+          "package_name": "com.example.real_estate_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChHwsM17SBFySEgtHIJtzqRWI0kkJ6kWo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
