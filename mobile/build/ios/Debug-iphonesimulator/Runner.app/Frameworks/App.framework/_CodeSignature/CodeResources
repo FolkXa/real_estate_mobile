@@ -10,11 +10,11 @@
 		</data>
 		<key>flutter_assets/AssetManifest.bin</key>
 		<data>
-		8qfQzm1hmuMcLdnO2nrVSoJ0FgM=
+		3DN2boed2ZUKEyfH/lmwKHPX4DQ=
 		</data>
 		<key>flutter_assets/AssetManifest.json</key>
 		<data>
-		tYZgx+Z9qOd32OhE+c1i+AfoCjg=
+		TbX8BesZldTz3RhcHB4tcqp1MEc=
 		</data>
 		<key>flutter_assets/FontManifest.json</key>
 		<data>
@@ -23,6 +23,14 @@
 		<key>flutter_assets/NOTICES.Z</key>
 		<data>
 		zAsTKdVHqe32JmrLLLbo+psjdX0=
+		</data>
+		<key>flutter_assets/assets/images/img_promotion.png</key>
+		<data>
+		ebJDFvyAAuuwtYFs9ETmLZwUS1U=
+		</data>
+		<key>flutter_assets/assets/images/logo.png</key>
+		<data>
+		elmTZnJWkK5MT8/1M3hL6M2Px5Y=
 		</data>
 		<key>flutter_assets/fonts/MaterialIcons-Regular.otf</key>
 		<data>
@@ -34,7 +42,7 @@
 		</data>
 		<key>flutter_assets/kernel_blob.bin</key>
 		<data>
-		HauubabCuaXDO+N7aEES9WZ/uN0=
+		dcFIq1aohClBMGhmk6xdtIWQJ00=
 		</data>
 		<key>flutter_assets/packages/country_pickers/assets/ad.png</key>
 		<data>
@@ -1083,14 +1091,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			wzn+atBul7TXhcmjbiICWqH+0p5BixZLS7cRqFSbhGg=
+			NMh2KjETL8Jrct3S92h3V71v/lmYJOiHzwpmcHj/uVk=
 			</data>
 		</dict>
 		<key>flutter_assets/AssetManifest.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			7xy6pnmt37BnXtsA0lKnRNHPbD0dZGgVogI3Wh7b5EA=
+			Kr2Mic4JInFAuH2tSYErc6GsRucOTehB/09QLRzsOAk=
 			</data>
 		</dict>
 		<key>flutter_assets/FontManifest.json</key>
@@ -1105,6 +1113,20 @@
 			<key>hash2</key>
 			<data>
 			7mwZX46nO3RAR0klTYyTK/RqGE80Hi7E0OknHX8lSrk=
+			</data>
+		</dict>
+		<key>flutter_assets/assets/images/img_promotion.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			bOzXEAguYbzJZdyseqiD4W0kDuBEfa6W/V6QxmOUhb0=
+			</data>
+		</dict>
+		<key>flutter_assets/assets/images/logo.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			cucsYVHqwcnpp6j+uk4ELr+q7wtUHUIZtKHUQ+NL/uA=
 			</data>
 		</dict>
 		<key>flutter_assets/fonts/MaterialIcons-Regular.otf</key>
@@ -1125,7 +1147,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			rTJjc+R+N5KcZ/tZOjWIowo5ey/+Jzk691RjE0QWdEM=
+			w83cM9qVlp6Or3NfpTIu60Cb+trnObHCCaKu7Vgeh2Q=
 			</data>
 		</dict>
 		<key>flutter_assets/packages/country_pickers/assets/ad.png</key>

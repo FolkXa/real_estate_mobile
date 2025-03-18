@@ -74,6 +74,11 @@ class LoginVersionOneScreen extends StatelessWidget {
                     text: "lbl_log_in".tr,
                     buttonStyle: CustomButtonStyles.outlineGray,
                     buttonTextStyle: theme.textTheme.titleLarge!,
+                    onPressed: () {
+                      NavigatorService.pushNamed(
+                        AppRoutes.homeFullScreen,
+                      );
+                    },
                   ),
                   SizedBox(height: 24.h),
                   _buildSeparatorSection(context),

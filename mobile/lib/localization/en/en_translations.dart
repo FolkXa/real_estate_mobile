@@ -76,6 +76,11 @@ final Map<String, String> enTranslations = {
   "lbl_villa": "Villa",
   "lbl_wings_tower": "Wings Tower",
   "lbl_yogyakarta": "Yogyakarta",
+  "lbl_home": "Home",
+  "lbl_search": "Search",
+  "lbl_favorite": "Favorites",
+  "lbl_dashboard": "Dashboard",
+  "lbl_profile": "Profile",
   "msg_40_off_on_your": "40% off on your transaction",
   "msg_all_discount_up": "All discount up to 60%",
   "msg_already_have_an": "Already have an account?",
@@ -116,5 +121,6 @@ final Map<String, String> enTranslations = {
   "msg_network_err": "Network Error",
   "msg_something_went_wrong": "Something Went Wrong!"
 };
+
 
 

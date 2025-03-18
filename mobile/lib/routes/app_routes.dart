@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:real_estate_project/pages/home_full_screen/home_full_screen.dart';
 import 'package:real_estate_project/pages/home_promotion_screen/home_promotion_screen.dart';
 import 'package:real_estate_project/pages/login_version_one_screen/login_version_one_screen.dart';
 import 'package:real_estate_project/pages/sign_up_screen/sign_up_screen.dart';
@@ -19,7 +20,7 @@ class AppRoutes {
     // loginVersionOneScreen: LoginVersionOneScreen.builder,
     signUpScreen: SignUpScreen.builder,
     // loginVersionTwoScreen: LoginVersionTwoScreen.builder,
-    // homeFullScreen: HomeFullScreen.builder,
+    homeFullScreen: HomeFullScreen.builder,
     homePromotionScreen: HomePromotionScreen.builder,
     // detailFullScreen: DetailFullScreen.builder,
     // detailShortScreen: DetailShortScreen.builder,
