@@ -1,47 +1,65 @@
-const admin = require("firebase-admin");
-const fs = require("fs");
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+import fs from "fs";
 
-// โหลด Service Account Key (ดาวน์โหลดจาก Firebase Console)
-const serviceAccount = require("./serviceAccountKey.json");
+// ✅ ตั้งค่า Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyChHwsM17SBFySEgtHIJtzqRWI0kkJ6kWo",
+  authDomain: "pj-realestate.firebaseapp.com",
+  projectId: "pj-realestate",
+  storageBucket: "pj-realestate.firebasestorage.app",
+  messagingSenderId: "266614568627",
+  appId: "1:266614568627:android:042069257b56d65dffa2c6"
+};
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// 🔥 เริ่มต้น Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-const db = admin.firestore();
-
-// อ่าน JSON ไฟล์
-const rawData = fs.readFileSync("assets/data/data.json", "utf8");
+// ✅ อ่านไฟล์ JSON
+const rawData = fs.readFileSync("./assets/data/data.json", "utf8");
 const jsonData = JSON.parse(rawData);
 
-async function importCollection(collectionName, data) {
-    const batch = db.batch();
-    data.forEach((item) => {
-      // ถ้า `item.id` มีค่าให้ใช้เป็น doc ID, ถ้าไม่มีให้ Firestore สร้างอัตโนมัติ
-      const docRef = item.id ? db.collection(collectionName).doc(item.id.toString()) : db.collection(collectionName).doc();
-      batch.set(docRef, item);
-    });
-  
-    await batch.commit();
-    console.log(`✅ ข้อมูล ${collectionName} ถูกนำเข้าสู่ Firestore สำเร็จ!`);
-  }
-  
+// ✅ ฟังก์ชันนำเข้าข้อมูล real_estate
+async function uploadRealEstateData() {
+  const realEstateData = jsonData.real_estate;
 
-// ฟังก์ชันหลักสำหรับนำเข้าข้อมูลทั้งหมด
-async function importData() {
-  try {
-    await importCollection("users", jsonData.users);
-    await importCollection("real_estate", jsonData.real_estate);
-    await importCollection("image_real_estate", jsonData.image_real_estate);
-    await importCollection("favorite_real_estate", jsonData.favorite_real_estate);
-    await importCollection("tags", jsonData.tags);
-    await importCollection("tag_real_estate", jsonData.tag_real_estate);
-
-    console.log("🔥 ข้อมูลทั้งหมดถูกอัปโหลดไปยัง Firestore แล้ว!");
-  } catch (error) {
-    console.error("❌ เกิดข้อผิดพลาดระหว่างการนำเข้าข้อมูล:", error);
+  if (!realEstateData || !Array.isArray(realEstateData)) {
+    console.error("❌ ข้อมูล real_estate ไม่ถูกต้อง");
+    return;
   }
+
+  console.log(`🚀 กำลังนำเข้าข้อมูล real_estate (${realEstateData.length} รายการ)...`);
+
+  const uploadPromises = realEstateData.map(async (item, index) => {
+    try {
+      // ✅ ป้องกัน Rate Limit โดยเพิ่มดีเลย์
+      await new Promise(resolve => setTimeout(resolve, index * 100));
+
+      // ✅ แปลงค่าที่เป็น null เป็นค่าเริ่มต้น
+      const sanitizedItem = {
+        ...item,
+        promote_at: item.promote_at || "", // แทนที่ null ด้วย string ว่าง
+        promote_end: item.promote_end || ""
+      };
+
+      // ✅ เพิ่มข้อมูลเข้า Firestore
+      const docRef = await addDoc(collection(db, "real_estate"), sanitizedItem);
+      console.log(`✅ เพิ่ม real_estate ID ${item.real_estate_id} -> Firestore ID: ${docRef.id}`);
+    } catch (error) {
+      console.error(`❌ เกิดข้อผิดพลาดที่ ID ${item.real_estate_id}:`, error);
+    }
+  });
+
+  await Promise.all(uploadPromises);
+  console.log("🔥 อัปโหลดข้อมูล real_estate สำเร็จ!");
 }
 
-// รันฟังก์ชันนำเข้าข้อมูล
-importData();
+// 🚀 เริ่มกระบวนการนำเข้า
+uploadRealEstateData().then(() => {
+  console.log("🎉 ข้อมูล real_estate ถูกอัปโหลดครบถ้วน! ปิดโปรแกรม...");
+  process.exit(0);
+}).catch((error) => {
+  console.error("❌ เกิดข้อผิดพลาด:", error);
+  process.exit(1);
+});

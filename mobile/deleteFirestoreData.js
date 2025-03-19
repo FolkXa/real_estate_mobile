@@ -1,46 +1,48 @@
-const admin = require("firebase-admin");
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, getDocs, deleteDoc, doc, addDoc } from "firebase/firestore";
 
-// โหลด Service Account Key
-const serviceAccount = require("./serviceAccountKey.json");
+// ✅ ตั้งค่า Firebase (ใช้ค่าจาก google-services.json)
+const firebaseConfig = {
+  apiKey: "AIzaSyChHwsM17SBFySEgtHIJtzqRWI0kkJ6kWo",
+  authDomain: "pj-realestate.firebaseapp.com",
+  projectId: "pj-realestate",
+  storageBucket: "pj-realestate.firebasestorage.app",
+  messagingSenderId: "266614568627",
+  appId: "1:266614568627:android:042069257b56d65dffa2c6"
+};
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// 🔥 เริ่มต้น Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-const db = admin.firestore();
+// ✅ ฟังก์ชันลบข้อมูลทั้งหมด
+async function deleteAllCollections() {
+  const collections = ["users", "real_estate", "image_real_estate", "favorite_real_estate", "tags", "tag_real_estate"];
 
-// ฟังก์ชันลบ Collection ทั้งหมด
-async function deleteCollection(collectionName) {
-  const collectionRef = db.collection(collectionName);
-  const snapshot = await collectionRef.get();
+  for (const collectionName of collections) {
+    const collectionRef = collection(db, collectionName);
+    const snapshot = await getDocs(collectionRef);
 
-  if (snapshot.empty) {
-    console.log(`❌ ไม่มีข้อมูลใน Collection: ${collectionName}`);
-    return;
+    if (snapshot.empty) {
+      console.log(`🚀 ไม่มีข้อมูลใน ${collectionName}`);
+      continue;
+    }
+
+    console.log(`🗑 กำลังลบข้อมูลใน ${collectionName} (${snapshot.size} รายการ)...`);
+
+    const deletePromises = snapshot.docs.map((docRef) => deleteDoc(doc(db, collectionName, docRef.id)));
+    await Promise.all(deletePromises);
+
+    console.log(`✅ ลบข้อมูลใน ${collectionName} เสร็จสิ้น`);
   }
+}
 
-  const batch = db.batch();
-  snapshot.docs.forEach((doc) => {
-    batch.delete(doc.ref);
+deleteAllCollections()
+  .then(() => {
+    console.log("🔥 ลบข้อมูลทั้งหมดเรียบร้อย!");
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error("❌ เกิดข้อผิดพลาด:", error);
+    process.exit(1);
   });
-
-  await batch.commit();
-  console.log(`✅ ลบข้อมูลทั้งหมดใน Collection: ${collectionName} แล้ว`);
-}
-
-// ฟังก์ชันหลักลบข้อมูลทั้งหมด
-async function resetDatabase() {
-  console.log("🚀 กำลังลบข้อมูลทั้งหมดใน Firestore...");
-  
-  await deleteCollection("users");
-  await deleteCollection("real_estate");
-  await deleteCollection("image_real_estate");
-  await deleteCollection("favorite_real_estate");
-  await deleteCollection("tags");
-  await deleteCollection("tag_real_estate");
-
-  console.log("🔥 Firestore ถูก Reset สำเร็จ!");
-}
-
-// รันฟังก์ชันลบข้อมูล
-resetDatabase();

@@ -16,6 +16,17 @@ class _SearchPageState extends State<SearchPage> {
   TextEditingController _bathroomController = TextEditingController();
   TextEditingController _minPriceController = TextEditingController();
   TextEditingController _maxPriceController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
+  String? selectedLocation;
+  bool isChecked = false;
+  void resetFields() {
+    setState(() {
+      _searchController.clear();
+      selectedLocation = null;
+      isChecked = false;
+    });
+  }
+
   RangeValues _priceRange = RangeValues(300000, 1000000);
   final NumberFormat currencyFormat = NumberFormat("#,###");
   double minLimit = 100000;
@@ -196,7 +207,12 @@ class _SearchPageState extends State<SearchPage> {
 
       filteredAmphures = amphures
           .where((a) => a["province_id"] == selectedProvinceId)
+          .map((a) => {
+                "id": a["id"],
+                "name_th": a["name_th"].replaceFirst("เขต", "").trim()
+              }) // ลบคำว่า "เขต" ออกตอนเอาจาก json
           .toList();
+
       filteredTambons = [];
     });
 
@@ -334,304 +350,349 @@ class _SearchPageState extends State<SearchPage> {
     return Scaffold(
       appBar: AppBar(
           title: Text("Search Real Estate"), backgroundColor: Colors.purple),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("เลือกที่ตั้ง",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                )),
-            SizedBox(height: 10),
-            TextField(
-              key: _textFieldKey,
-              controller: _provinceController,
-              focusNode: _focusNode,
-              onChanged: _searchProvince,
-              decoration: InputDecoration(
-                hintText: "พิมพ์ชื่อจังหวัด",
-                prefixIcon: Icon(Icons.location_city, color: Colors.blue),
-                suffixIcon: _provinceController.text.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            selectedProvince = null;
-                            selectedAmphure = null;
-                            selectedTambon = null;
-                            _provinceController.clear();
-                            filteredAmphures = [];
-                            filteredTambons = [];
-                          });
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-            ),
-            SizedBox(height: 10),
-            Text("เลือกอำเภอ"),
-            SizedBox(height: 5),
-            DropdownButtonFormField<String>(
-              value: selectedAmphure,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.map, color: Colors.orange),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-              hint: Text("เลือกอำเภอ"),
-              isExpanded: true,
-              items: filteredAmphures.map((a) {
-                return DropdownMenuItem<String>(
-                  value: a['name_th'],
-                  child: Text(a['name_th']),
-                );
-              }).toList(),
-              onChanged: _onAmphureSelected,
-            ),
-            SizedBox(height: 10),
-            Text("เลือกตำบล"),
-            SizedBox(height: 5),
-            DropdownButtonFormField<String>(
-              value: selectedTambon,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.place, color: Colors.red),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-              hint: Text("เลือกตำบล"),
-              isExpanded: true,
-              items: filteredTambons.map((t) {
-                return DropdownMenuItem<String>(
-                  value: t['name_th'],
-                  child: Text(t['name_th']),
-                );
-              }).toList(),
-              onChanged: _onTambonSelected,
-            ),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "เลือกประเภทอสังหาริมทรัพย์",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                TextButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      selectedPropertyType = null;
-                      _bedroomController.clear();
-                      _bathroomController.clear();
-                    });
-                  },
-                  label: Text("รีเซ็ต",
-                      style: TextStyle(
-                          color: const Color.fromARGB(255, 104, 103, 103))),
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-            DropdownButton<String>(
-              value: selectedPropertyType,
-              hint: Text("เลือกประเภท"),
-              isExpanded: true,
-              items: propertyTypes.map((p) {
-                return DropdownMenuItem<String>(
-                  value: p,
-                  child: Text(p),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedPropertyType = value;
-                });
-              },
-            ),
-            AnimatedSwitcher(
-              duration: Duration(milliseconds: 300),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return SlideTransition(
-                  position: Tween<Offset>(
-                    begin: Offset(0.0, -0.3),
-                    end: Offset.zero,
-                  ).animate(animation),
-                  child: FadeTransition(opacity: animation, child: child),
-                );
-              },
-              child: (selectedPropertyType == "บ้านเดี่ยว" ||
-                      selectedPropertyType == "ทาวเฮ้า")
-                  ? Column(
-                      key: ValueKey<String>(selectedPropertyType ?? ""),
-                      children: [
-                        SizedBox(height: 10),
-                        SizedBox(
-                          width: double.infinity,
-                          child: TextField(
-                            controller: _bedroomController,
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.right,
-                            decoration: InputDecoration(
-                              labelText: "จำนวนห้องนอน",
-                              prefixIcon: Icon(Icons.bed, color: Colors.purple),
-                              suffixText: " ห้อง",
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 16),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        SizedBox(
-                          width: double.infinity,
-                          child: TextField(
-                            controller: _bathroomController,
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.right,
-                            decoration: InputDecoration(
-                              labelText: "จำนวนห้องน้ำ",
-                              prefixIcon:
-                                  Icon(Icons.bathtub, color: Colors.blue),
-                              suffixText: " ห้อง",
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 16),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                      ],
-                    )
-                  : SizedBox.shrink(),
-            ),
-            SizedBox(height: 20),
-            Text("ช่วงราคาที่ต้องการ",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 5),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("ราคาต่ำสุด",
-                          style: TextStyle(color: Colors.purple)),
-                      SizedBox(height: 5),
-                      TextField(
-                        controller: _minPriceController,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.right,
-                        decoration: InputDecoration(
-                          prefixText: "฿ ",
-                          suffixText: " บาท",
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 14, horizontal: 16),
-                        ),
-                        onChanged: _onMinPriceChanged,
-                      ),
-                    ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("เลือกที่ตั้ง",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  )),
+              SizedBox(height: 10),
+              TextField(
+                key: _textFieldKey,
+                controller: _provinceController,
+                focusNode: _focusNode,
+                onChanged: _searchProvince,
+                decoration: InputDecoration(
+                  hintText: "พิมพ์ชื่อจังหวัด",
+                  prefixIcon: Icon(Icons.location_city, color: Colors.blue),
+                  suffixIcon: _provinceController.text.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear),
+                          onPressed: () {
+                            setState(() {
+                              selectedProvince = null;
+                              selectedAmphure = null;
+                              selectedTambon = null;
+                              _provinceController.clear();
+                              filteredAmphures = [];
+                              filteredTambons = [];
+                            });
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("ราคาสูงสุด",
-                          style: TextStyle(color: Colors.purple)),
-                      SizedBox(height: 5),
-                      TextField(
-                        controller: _maxPriceController,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.right,
-                        decoration: InputDecoration(
-                          prefixText: "฿ ",
-                          suffixText: " บาท",
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 14, horizontal: 16),
-                        ),
-                        onChanged: _onMaxPriceChanged,
-                      ),
-                    ],
+              ),
+              SizedBox(height: 10),
+              Text("เลือกอำเภอ"),
+              SizedBox(height: 5),
+              DropdownButtonFormField<String>(
+                value: selectedAmphure,
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.map, color: Colors.orange),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 2),
-            RangeSlider(
-              values: _priceRange,
-              min: minLimit,
-              max: maxLimit,
-              divisions: ((maxLimit - minLimit) ~/ step),
-              labels: RangeLabels(
-                currencyFormat.format(_priceRange.start),
-                currencyFormat.format(_priceRange.end),
-              ),
-              onChanged: (RangeValues values) {
-                setState(() {
-                  _priceRange = RangeValues(
-                    (values.start / step).round() * step,
-                    (values.end / step).round() * step,
+                hint: Text("เลือกอำเภอ"),
+                isExpanded: true,
+                items: filteredAmphures.map((a) {
+                  return DropdownMenuItem<String>(
+                    value: a['name_th'],
+                    child: Text(a['name_th']),
                   );
-                  _updatePriceTextFields();
-                });
-              },
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SearchResultPage(
-                      province: selectedProvince,
-                      amphure: selectedAmphure,
-                      tambon: selectedTambon,
-                      propertyType: selectedPropertyType,
-                      bedrooms: _bedroomController.text.isNotEmpty
-                          ? int.tryParse(_bedroomController.text)
-                          : null,
-                      bathrooms: _bathroomController.text.isNotEmpty
-                          ? int.tryParse(_bathroomController.text)
-                          : null,
-                      minPrice: _minPriceController.text.isNotEmpty
-                          ? double.tryParse(
-                              _minPriceController.text.replaceAll(",", ""))
-                          : null,
-                      maxPrice: _maxPriceController.text.isNotEmpty
-                          ? double.tryParse(
-                              _maxPriceController.text.replaceAll(",", ""))
-                          : null,
+                }).toList(),
+                onChanged: _onAmphureSelected,
+              ),
+              SizedBox(height: 10),
+              Text("เลือกตำบล"),
+              SizedBox(height: 5),
+              DropdownButtonFormField<String>(
+                value: selectedTambon,
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.place, color: Colors.red),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                hint: Text("เลือกตำบล"),
+                isExpanded: true,
+                items: filteredTambons.map((t) {
+                  return DropdownMenuItem<String>(
+                    value: t['name_th'],
+                    child: Text(t['name_th']),
+                  );
+                }).toList(),
+                onChanged: _onTambonSelected,
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "เลือกประเภทอสังหาริมทรัพย์",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        selectedPropertyType = null;
+                        _bedroomController.clear();
+                        _bathroomController.clear();
+                      });
+                    },
+                    label: Text("รีเซ็ต",
+                        style: TextStyle(
+                            color: const Color.fromARGB(255, 104, 103, 103))),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              DropdownButton<String>(
+                value: selectedPropertyType,
+                hint: Text("เลือกประเภท"),
+                isExpanded: true,
+                items: propertyTypes.map((p) {
+                  return DropdownMenuItem<String>(
+                    value: p,
+                    child: Text(p),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedPropertyType = value;
+                  });
+                },
+              ),
+              AnimatedSwitcher(
+                duration: Duration(milliseconds: 300),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: Offset(0.0, -0.3),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: FadeTransition(opacity: animation, child: child),
+                  );
+                },
+                child: (selectedPropertyType == "บ้านเดี่ยว" ||
+                        selectedPropertyType == "ทาวเฮ้า")
+                    ? Column(
+                        key: ValueKey<String>(selectedPropertyType ?? ""),
+                        children: [
+                          SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextField(
+                              controller: _bedroomController,
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.right,
+                              decoration: InputDecoration(
+                                labelText: "จำนวนห้องนอน",
+                                prefixIcon:
+                                    Icon(Icons.bed, color: Colors.purple),
+                                suffixText: " ห้อง",
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                contentPadding: EdgeInsets.symmetric(
+                                    vertical: 14, horizontal: 16),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextField(
+                              controller: _bathroomController,
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.right,
+                              decoration: InputDecoration(
+                                labelText: "จำนวนห้องน้ำ",
+                                prefixIcon:
+                                    Icon(Icons.bathtub, color: Colors.blue),
+                                suffixText: " ห้อง",
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                                contentPadding: EdgeInsets.symmetric(
+                                    vertical: 14, horizontal: 16),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                        ],
+                      )
+                    : SizedBox.shrink(),
+              ),
+              SizedBox(height: 20),
+              Text("ช่วงราคาที่ต้องการ",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 5),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("ราคาต่ำสุด",
+                            style: TextStyle(color: Colors.purple)),
+                        SizedBox(height: 5),
+                        TextField(
+                          controller: _minPriceController,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.right,
+                          decoration: InputDecoration(
+                            prefixText: "฿ ",
+                            suffixText: " บาท",
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 14, horizontal: 16),
+                          ),
+                          onChanged: _onMinPriceChanged,
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple,
-                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("ราคาสูงสุด",
+                            style: TextStyle(color: Colors.purple)),
+                        SizedBox(height: 5),
+                        TextField(
+                          controller: _maxPriceController,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.right,
+                          decoration: InputDecoration(
+                            prefixText: "฿ ",
+                            suffixText: " บาท",
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 14, horizontal: 16),
+                          ),
+                          onChanged: _onMaxPriceChanged,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 2),
+              RangeSlider(
+                values: _priceRange,
+                min: minLimit,
+                max: maxLimit,
+                divisions: ((maxLimit - minLimit) ~/ step),
+                labels: RangeLabels(
+                  currencyFormat.format(_priceRange.start),
+                  currencyFormat.format(_priceRange.end),
                 ),
+                onChanged: (RangeValues values) {
+                  setState(() {
+                    _priceRange = RangeValues(
+                      (values.start / step).round() * step,
+                      (values.end / step).round() * step,
+                    );
+                    _updatePriceTextFields();
+                  });
+                },
               ),
-              child: Center(
-                child: Text("ค้นหา",
-                    style: TextStyle(fontSize: 18, color: Colors.white)),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // ปุ่มรีเซ็ต
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        selectedProvince = null;
+                        selectedAmphure = null;
+                        selectedTambon = null;
+                        selectedPropertyType = null;
+                        _bedroomController.clear();
+                        _bathroomController.clear();
+                        _minPriceController.clear();
+                        _maxPriceController.clear();
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          Colors.white, // เปลี่ยนพื้นหลังเป็นสีม่วง
+                      padding: EdgeInsets.symmetric(
+                          vertical: 20, horizontal: 40), // ขยายขนาดปุ่ม
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(
+                            color: Colors.purple, width: 2), // เส้นขอบสีม่วง
+                      ),
+                      minimumSize: Size(150, 60), // กำหนดขนาดขั้นต่ำของปุ่ม
+                    ),
+                    child: Center(
+                      child: Text("รีเซ็ต",
+                          style: TextStyle(
+                              fontSize: 18,
+                              color:
+                                  Colors.purple)), // เปลี่ยนตัวหนังสือเป็นสีขาว
+                    ),
+                  ),
+
+                  // ปุ่มค้นหา
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SearchResultPage(
+                            province: selectedProvince,
+                            amphure: selectedAmphure,
+                            tambon: selectedTambon,
+                            propertyType: selectedPropertyType,
+                            bedroom: _bedroomController.text.isNotEmpty
+                                ? int.tryParse(_bedroomController.text)
+                                : null,
+                            bathroom: _bathroomController.text.isNotEmpty
+                                ? int.tryParse(_bathroomController.text)
+                                : null,
+                            minPrice: _minPriceController.text.isNotEmpty
+                                ? double.tryParse(_minPriceController.text
+                                    .replaceAll(",", ""))
+                                : null,
+                            maxPrice: _maxPriceController.text.isNotEmpty
+                                ? double.tryParse(_maxPriceController.text
+                                    .replaceAll(",", ""))
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple, // พื้นหลังสีม่วง
+                      padding: EdgeInsets.symmetric(
+                          vertical: 20, horizontal: 40), // ขยายขนาดปุ่ม
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      minimumSize: Size(150, 60), // กำหนดขนาดขั้นต่ำของปุ่ม
+                    ),
+                    child: Center(
+                      child: Text("ค้นหา",
+                          style: TextStyle(fontSize: 18, color: Colors.white)),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            SizedBox(height: 20),
-          ],
+            ],
+          ),
         ),
       ),
     );
