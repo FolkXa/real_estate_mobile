@@ -4,9 +4,26 @@ import 'login_screen.dart';
 import 'signup_screen.dart';
 import 'home_screen.dart';
 
+const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyChHwsM17SBFySEgtHIJtzqRWI0kkJ6kWo',
+    appId: '1:266614568627:android:042069257b56d65dffa2c6',
+    messagingSenderId: '266614568627',
+    projectId: 'pj-realestate',
+    storageBucket: 'pj-realestate.firebasestorage.app',
+  );
+
+const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCjVN5Su92iL5oomLHtMecYZVVfTboVH74',
+    appId: '1:266614568627:ios:23a543b5bc86cccdffa2c6',
+    messagingSenderId: '266614568627',
+    projectId: 'pj-realestate',
+    storageBucket: 'pj-realestate.firebasestorage.app',
+    iosBundleId: 'com.example.realEstateProject',
+  );
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: ios);
   runApp(MyApp());
 }
 
@@ -24,3 +41,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

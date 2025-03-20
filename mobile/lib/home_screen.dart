@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:real_estate_project/SearchPage.dart';
+import 'package:real_estate_project/screens/property_detail.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -329,34 +330,44 @@ class HomeScreen extends StatelessWidget {
             int viewCount = data["view"] ?? 0;
             String location = data["province"] ?? "ไม่ระบุที่ตั้ง";
 
-            return FutureBuilder<QuerySnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection('image_real_estate')
-                  .where('real_estate_id', isEqualTo: realEstateId)
-                  .limit(1)
-                  .get(),
-              builder: (context, imageSnapshot) {
-                if (imageSnapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-
-                String imagePath = "assets/images/house1.jpg";
-
-                if (imageSnapshot.hasData &&
-                    imageSnapshot.data!.docs.isNotEmpty) {
-                  var imageData = imageSnapshot.data!.docs.first.data()
-                      as Map<String, dynamic>;
-                  imagePath =
-                      imageData["image_path"] ?? "assets/images/house1.jpg";
-                }
-
-                return _buildNearbyCard(
-                  imagePath,
-                  price,
-                  viewCount,
-                  location,
-                );
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => PropertyDetailScreen(
+                    realEstateId: realEstateId,
+                  ),
+                ));
               },
+              child: FutureBuilder<QuerySnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('image_real_estate')
+                    .where('real_estate_id', isEqualTo: realEstateId)
+                    .limit(1)
+                    .get(),
+                builder: (context, imageSnapshot) {
+                  if (imageSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+
+                  String imagePath = "assets/images/house1.jpg";
+
+                  if (imageSnapshot.hasData &&
+                      imageSnapshot.data!.docs.isNotEmpty) {
+                    var imageData = imageSnapshot.data!.docs.first.data()
+                        as Map<String, dynamic>;
+                    imagePath =
+                        imageData["image_path"] ?? "assets/images/house1.jpg";
+                  }
+
+                  return _buildNearbyCard(
+                    imagePath,
+                    price,
+                    viewCount,
+                    location,
+                  );
+                },
+              ),
             );
           },
         );
