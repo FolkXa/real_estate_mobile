@@ -600,10 +600,10 @@ class _SearchPageState extends State<SearchPage> {
                       amphure: selectedAmphure,
                       tambon: selectedTambon,
                       propertyType: selectedPropertyType,
-                      bedrooms: _bedroomController.text.isNotEmpty
+                      bedroom: _bedroomController.text.isNotEmpty
                           ? int.tryParse(_bedroomController.text)
                           : null,
-                      bathrooms: _bathroomController.text.isNotEmpty
+                      bathroom: _bathroomController.text.isNotEmpty
                           ? int.tryParse(_bathroomController.text)
                           : null,
                       minPrice: _minPriceController.text.isNotEmpty
