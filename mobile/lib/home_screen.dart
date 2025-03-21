@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:real_estate_project/SearchPage.dart';
+import 'package:real_estate_project/profile_screen.dart';
 import 'package:real_estate_project/screens/property_detail.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -11,7 +13,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
+            _buildHeader(context),
             _buildSearchBar(context),
             _buildCategorySelector(),
             _buildPromotionBanner(),
@@ -31,34 +33,76 @@ class HomeScreen extends StatelessWidget {
   }
 
   /// Header ส่วนบนของแอป
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 100.0, 16.0, 20.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildHeader(BuildContext context) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: currentUser?.email ?? '')
+          .limit(1)
+          .get(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 100.0, 16.0, 20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text("Hey!",
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold)),
+                    Text("Let's start exploring",
+                        style: TextStyle(fontSize: 18, color: Colors.grey)),
+                  ],
+                ),
+                const CircleAvatar(
+                  radius: 25,
+                  backgroundImage:
+                      AssetImage("assets/images/default_avatar.png"),
+                ),
+              ],
+            ),
+          );
+        }
+
+        var data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
+        String name = data['nick_name'] ?? "User";
+        String imageUrl =
+            data['image_path'] ?? "https://i.ibb.co/7C5jfjq/placeholder.jpg";
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 100.0, 16.0, 20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Hey, TOTO!",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              Text("Let's start exploring",
-                  style: TextStyle(fontSize: 18, color: Colors.grey)),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Hey, $name!",
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  Text("Let's start exploring",
+                      style: TextStyle(fontSize: 18, color: Colors.grey)),
+                ],
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => ProfileScreen()));
+                },
+                child: CircleAvatar(
+                  radius: 25,
+                  backgroundImage: NetworkImage(imageUrl),
+                ),
+              ),
             ],
           ),
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: DecorationImage(
-                image: AssetImage("assets/images/profile.jpg"),
-                fit: BoxFit.fill,
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -332,11 +376,13 @@ class HomeScreen extends StatelessWidget {
 
             return GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => PropertyDetailScreen(
-                    realEstateId: realEstateId,
-                  ),
-                ));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PropertyDetailScreen(
+                        realEstateId: realEstateId,
+                      ),
+                    ));
               },
               child: FutureBuilder<QuerySnapshot>(
                 future: FirebaseFirestore.instance
@@ -386,7 +432,7 @@ class HomeScreen extends StatelessWidget {
           // รูปภาพ
           ClipRRect(
             borderRadius: BorderRadius.vertical(top: Radius.circular(10.0)),
-            child: Image.asset(
+            child: Image.network(
               imagePath,
               fit: BoxFit.cover,
               height: 120,
