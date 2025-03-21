@@ -1,4 +1,5 @@
-import 'dotenv/config';
+import dotenv from "dotenv";
+dotenv.config();
 import fs from "fs";
 import path from "path";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
@@ -7,18 +8,18 @@ import { getFirestore, collection, addDoc } from "firebase/firestore";
 
 // ✅ ตั้งค่า Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyChHwsM17SBFySEgtHIJtzqRWI0kkJ6kWo",
-  authDomain: "pj-realestate.firebaseapp.com",
-  projectId: "pj-realestate",
-  storageBucket: "pj-realestate.firebasestorage.app",
-  messagingSenderId: "266614568627",
-  appId: "1:266614568627:android:042069257b56d65dffa2c6"
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ✅ ใช้ environment variables
+// ✅ ตั้งค่า Cloudflare R2
 const R2_BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET;
 const R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL;
 
@@ -72,30 +73,57 @@ async function uploadData(collectionName, dataList, primaryKey) {
     try {
       let sanitizedItem = { ...item };
 
-      // ✅ กรณีอัปโหลด image_real_estate → อัปโหลดไป R2
+      // ✅ ตรวจสอบว่า `primaryKey` มีค่าหรือไม่
+      if (!item[primaryKey]) {
+        console.warn(`⚠️ ${primaryKey} หายไปใน item:`, item);
+        continue;
+      }
+
+      // ✅ กรณีอัปโหลดรูป `image_real_estate`
       if (collectionName === "image_real_estate") {
         if (!item.image_id) {
           console.warn(`⚠️ image_id หายไปใน item:`, item);
           continue;
         }
-      
-        const localPath = path.join("./", item.image_path);
-        const fileName = `real_estate/${item.image_id}.jpg`;
-      
-        console.log(`📷 เตรียมอัปโหลด: ${localPath} → ${fileName}`);
-      
+        const localPath = path.join("./assets/images/", item.image_path);
+        const fileName = `real_estate/${item.image_path}`;
+        
+
         const uploadedUrl = await uploadToR2(localPath, fileName);
-      
         if (uploadedUrl) {
           sanitizedItem.image_path = uploadedUrl;
-          console.log(`✅ image_path ที่ได้: ${uploadedUrl}`);
         } else {
           console.warn(`⚠️ ข้ามรูป real_estate_id ${item.real_estate_id}`);
           continue;
         }
       }
-      
 
+      // ✅ กรณีอัปโหลดรูป `users`
+if (collectionName === "users") {
+  if (!item.user_id) {
+    console.warn(`⚠️ user_id หายไปใน item:`, item);
+    continue;
+  }
+
+  // ✅ ถ้าเป็น default.jpg ให้ข้ามการอัปโหลดและใช้ path เดิม
+  if (item.image_path === "default.jpg") {
+    console.log(`ℹ️ user_id ${item.user_id} ใช้รูป default.jpg - ข้ามการอัปโหลด`);
+  } else {
+    const localPath = path.join("./assets/images/", item.image_path);
+    const fileName = `users/${item.image_path}`;
+
+    const uploadedUrl = await uploadToR2(localPath, fileName);
+    if (uploadedUrl) {
+      sanitizedItem.image_path = uploadedUrl;
+    } else {
+      console.warn(`⚠️ ข้ามรูป user_id ${item.user_id}`);
+      continue;
+    }
+  }
+}
+
+
+      // ✅ เพิ่มข้อมูลเข้า Firestore
       const docRef = await addDoc(collection(db, collectionName), sanitizedItem);
       console.log(`✅ เพิ่ม ${collectionName} ID ${item[primaryKey]} -> Firestore ID: ${docRef.id}`);
     } catch (error) {

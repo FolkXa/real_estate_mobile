@@ -4,21 +4,28 @@ import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 
+// ✅ ตรวจสอบการโหลดค่า `.env`
+if (!process.env.CLOUDFLARE_R2_BUCKET || !process.env.CLOUDFLARE_R2_ENDPOINT || !process.env.CLOUDFLARE_ACCESS_KEY || !process.env.CLOUDFLARE_SECRET_KEY) {
+  console.error("❌ ค่าจาก .env ไม่ถูกต้อง กรุณาตรวจสอบไฟล์ .env");
+  process.exit(1);
+}
+
 // ✅ ตั้งค่า Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyChHwsM17SBFySEgtHIJtzqRWI0kkJ6kWo",
-  authDomain: "pj-realestate.firebaseapp.com",
-  projectId: "pj-realestate",
-  storageBucket: "pj-realestate.firebasestorage.app",
-  messagingSenderId: "266614568627",
-  appId: "1:266614568627:android:042069257b56d65dffa2c6"
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// ✅ ตั้งค่า Cloudflare R2
 const R2_BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET;
-
+const R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL;
 const s3Client = new S3Client({
   region: "auto",
   endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
@@ -30,6 +37,12 @@ const s3Client = new S3Client({
 
 // ✅ ฟังก์ชันลบรูปจาก Cloudflare R2
 async function deleteImageFromR2(filePath) {
+  if (!R2_BUCKET_NAME) {
+    console.error("❌ ไม่พบค่า R2_BUCKET_NAME");
+    return false;
+  }
+
+  console.log(`🗑 กำลังลบรูป: ${filePath} จากบัคเก็ต: ${R2_BUCKET_NAME}`);
   try {
     await s3Client.send(new DeleteObjectCommand({ Bucket: R2_BUCKET_NAME, Key: filePath }));
     console.log(`✅ ลบรูปจาก R2 สำเร็จ: ${filePath}`);
@@ -54,11 +67,18 @@ async function deleteCollectionWithImages(collectionName) {
 
   for (const docRef of snapshot.docs) {
     const data = docRef.data();
-    const imageUrl = data.image_path; // 🔥 ใช้ image_path ที่เก็บไว้
+    let imageUrl = data.image_path;
 
     if (imageUrl) {
-      const filePath = imageUrl.replace("https://pub-33d01538ba524615b21478ed0f03e519.r2.dev/", "");
-      const success = await deleteImageFromR2(filePath);
+      // ✅ ดึง filePath จาก URL จริง
+      if (imageUrl.startsWith(R2_PUBLIC_URL)) {
+        imageUrl = imageUrl.replace(`${R2_PUBLIC_URL}/`, "");
+      } else {
+        console.warn(`⚠️ URL ไม่ใช่ของ R2: ${imageUrl}`);
+      }
+
+      console.log(`🔍 เตรียมลบไฟล์: ${imageUrl}`);
+      const success = await deleteImageFromR2(imageUrl);
       if (!success) {
         console.warn(`⚠️ ข้ามเอกสาร: ${docRef.id}`);
         continue;
@@ -76,21 +96,6 @@ async function deleteCollectionWithImages(collectionName) {
   }
 
   console.log(`✅ ลบข้อมูลใน ${collectionName} เสร็จสิ้น`);
-}
-
-// ✅ ฟังก์ชันลบทุกคอลเล็กชัน
-async function deleteAllCollections() {
-  const collections = ["users", "real_estate", "image_real_estate", "favorite_real_estate", "tags", "tag_real_estate"];
-
-  for (const collectionName of collections) {
-    if (collectionName === "image_real_estate") {
-      // 🔥 ลบรูปจาก R2 ก่อนลบข้อมูล Firestore
-      await deleteCollectionWithImages(collectionName);
-    } else {
-      await deleteCollection(collectionName);
-    }
-    await new Promise(resolve => setTimeout(resolve, 200)); // ✅ ป้องกัน Rate Limit ระหว่างคอลเล็กชัน
-  }
 }
 
 // ✅ ฟังก์ชันลบข้อมูลทีละคอลเล็กชัน (สำหรับข้อมูลอื่นที่ไม่ใช่รูปภาพ)
@@ -118,6 +123,21 @@ async function deleteCollection(collectionName) {
   }
 
   console.log(`✅ ลบข้อมูลใน ${collectionName} เสร็จสิ้น`);
+}
+
+// ✅ ฟังก์ชันลบทุกคอลเล็กชัน
+async function deleteAllCollections() {
+  const collections = ["users", "real_estate", "image_real_estate", "favorite_real_estate", "tags", "tag_real_estate"];
+
+  for (const collectionName of collections) {
+    if (collectionName === "image_real_estate") {
+      console.log(`🖼 ลบรูปจาก Cloudflare R2 ก่อน`);
+      await deleteCollectionWithImages(collectionName);
+    } else {
+      await deleteCollection(collectionName);
+    }
+    await new Promise(resolve => setTimeout(resolve, 200)); // ✅ ป้องกัน Rate Limit ระหว่างคอลเล็กชัน
+  }
 }
 
 // 🚀 เริ่มกระบวนการลบข้อมูล
