@@ -1,0 +1,475 @@
+{
+	"info": {
+		"_postman_id": "dadfef44-eb38-41c1-b50c-36022b4666c4",
+		"name": "Test API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "29009925"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/users"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/users/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Create New User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"john_doe\",\n  \"password\": \"securepass123\",\n  \"email\": \"john@example.com\",\n  \"image_path\": \"profile.jpg\",\n  \"role\": \"user\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"nick_name\": \"Johnny\",\n  \"phone_number\": \"0812345678\"\n}"
+						},
+						"url": "http://localhost:8080/users"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"john_doe_updated\",\n  \"email\": \"john.updated@example.com\",\n  \"image_path\": \"new_profile.jpg\",\n  \"role\": \"admin\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"nick_name\": \"Johnny\",\n  \"phone_number\": \"0812345678\"\n}"
+						},
+						"url": "http://localhost:8080/users/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Soft Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/users/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Reactivate User",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": "http://localhost:8080/users/1/reactivate"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Real Estate",
+			"item": [
+				{
+					"name": "Get All Real Estates",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/real_estates"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Real Estate by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/real_estates/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Real Estate",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": 1,\n  \"type_realestate\": \"คอนโด\",\n  \"type_sell\": \"ขายขาด\",\n  \"address\": \"123/4 ซอยสุขุมวิท 50\",\n  \"tambon\": \"พระโขนง\",\n  \"amphur\": \"คลองเตย\",\n  \"province\": \"กรุงเทพมหานคร\",\n  \"details\": \"คอนโดหรูพร้อมเข้าอยู่\",\n  \"view\": 10,\n  \"premium_promote\": true,\n  \"active\": true\n}"
+						},
+						"url": "http://localhost:8080/real_estates"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Real Estate",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": 1,\n  \"type_realestate\": \"บ้านเดี่ยว\",\n  \"type_sell\": \"เช่า\",\n  \"address\": \"567/8 ถนนลาดพร้าว\",\n  \"tambon\": \"จตุจักร\",\n  \"amphur\": \"บางเขน\",\n  \"province\": \"กรุงเทพมหานคร\",\n  \"details\": \"บ้านเดี่ยว 2 ชั้น เฟอร์นิเจอร์ครบ\",\n  \"view\": 25,\n  \"premium_promote\": false,\n  \"active\": true\n}"
+						},
+						"url": "http://localhost:8080/real_estates/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Soft Delete Real Estate",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/real_estates/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Reactivate Real Estate",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": "http://localhost:8080/real_estates/1/reactivate"
+					},
+					"response": []
+				},
+				{
+					"name": "Activate Premium Promotion",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \"promote_at\": \"2024-02-09T00:00:00Z\",\n \"promote_end\": \"2024-03-09T00:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/real_estates/1/activate_premium"
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate Premium Promotion",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": "http://localhost:8080/real_estates/1/deactivate_promotion"
+					},
+					"response": []
+				},
+				{
+					"name": "Increment View",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Image Real Estate",
+			"item": [
+				{
+					"name": "Get All Image Real Estates",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/image_real_estates"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Image Real Estate by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/image_real_estates/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Image Real Estate",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"real_estate_id\": 1,\n  \"image_url\": \"https://example.com/image1.jpg\",\n  \"description\": \"\\u0e23\\u0e39\\u0e1b\\u0e14\\u0e49\\u0e32\\u0e19\\u0e2b\\u0e19\\u0e49\\u0e32\\u0e02\\u0e2d\\u0e07\\u0e2d\\u0e2a\\u0e31\\u0e07\\u0e2b\\u0e32\\u0e23\\u0e34\\u0e21\\u0e17\\u0e23\\u0e31\\u0e1e\\u0e22\\u0e4c\"\n}"
+						},
+						"url": "http://localhost:8080/image_real_estates"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Image Real Estate",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"real_estate_id\": 1,\n  \"image_url\": \"https://example.com/image1_updated.jpg\",\n  \"description\": \"\\u0e23\\u0e39\\u0e1b\\u0e1b\\u0e23\\u0e31\\u0e1a\\u0e1b\\u0e23\\u0e38\\u0e07\\u0e02\\u0e2d\\u0e07\\u0e2d\\u0e2a\\u0e31\\u0e07\\u0e2b\\u0e32\\u0e23\\u0e34\\u0e21\\u0e17\\u0e23\\u0e31\\u0e1e\\u0e22\\u0e4c\"\n}"
+						},
+						"url": "http://localhost:8080/image_real_estates/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Soft Delete Image Real Estate",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/image_real_estates/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Reactivate Image Real Estate",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": "http://localhost:8080/image_real_estates/1/reactivate"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Favorite Real Estate",
+			"item": [
+				{
+					"name": "Get All Favorites",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/favorites"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Favorite by UserID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/favorites/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"favorites",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Favorite",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"userId\": 1, \"realEstateId\": 2}"
+						},
+						"url": "http://localhost:8080/favorites"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Favorite",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/favorites/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"favorites",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tag",
+			"item": [
+				{
+					"name": "Get All Tag",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/tags"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tag by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/tags/5"
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tag_name\": \"Luxury\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/tags"
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/tags/5"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tag Realestate",
+			"item": [
+				{
+					"name": "Get All Tag Realestate",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/tag_real_estates"
+					},
+					"response": []
+				},
+				{
+					"name": "Get By RealEstate ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/tag_real_estates/real_estate/2"
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Tag ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/tag_real_estates/tag/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Tag Realestate",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"tag_id\": 1, \"real_estate_id\": 2}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/tag_real_estates"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Tag Realestate",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/tag_real_estates/5"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

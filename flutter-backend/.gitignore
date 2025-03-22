@@ -29,14 +29,6 @@ yarn.lock
 dist/
 build/
 
-# Docker
-Dockerfile
-docker-compose.yml
-.dockerignore
-
-# Database and SQL scripts
-scrip_sql/
-
 # Temporary files
 tmp/
 temp/
