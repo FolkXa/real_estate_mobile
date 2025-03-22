@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.772.0",
-    "dotenv": "^16.4.7",
-    "firebase": "^11.5.0"
-  }
-}
