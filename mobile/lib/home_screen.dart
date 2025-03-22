@@ -6,9 +6,23 @@ import 'package:real_estate_project/screens/property_detail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatelessWidget {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: CustomDrawer(onLogout: () {
+        FirebaseAuth.instance.signOut();
+        Navigator.pushReplacementNamed(context, '/login');
+      }),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            _scaffoldKey.currentState!.openDrawer();
+          },
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,7 +42,6 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigation(),
     );
   }
 
@@ -45,7 +58,7 @@ class HomeScreen extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 100.0, 16.0, 20.0),
+            padding: const EdgeInsets.fromLTRB(16.0, 50.0, 16.0, 20.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -58,12 +71,7 @@ class HomeScreen extends StatelessWidget {
                     Text("Let's start exploring",
                         style: TextStyle(fontSize: 18, color: Colors.grey)),
                   ],
-                ),
-                const CircleAvatar(
-                  radius: 25,
-                  backgroundImage:
-                      AssetImage("assets/images/default_avatar.png"),
-                ),
+                )
               ],
             ),
           );
@@ -75,7 +83,7 @@ class HomeScreen extends StatelessWidget {
             data['image_path'] ?? "https://i.ibb.co/7C5jfjq/placeholder.jpg";
 
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 100.0, 16.0, 20.0),
+          padding: const EdgeInsets.fromLTRB(16.0, 50.0, 16.0, 20.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -89,16 +97,16 @@ class HomeScreen extends StatelessWidget {
                       style: TextStyle(fontSize: 18, color: Colors.grey)),
                 ],
               ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => ProfileScreen()));
-                },
-                child: CircleAvatar(
-                  radius: 25,
-                  backgroundImage: NetworkImage(imageUrl),
-                ),
-              ),
+              // GestureDetector(
+              //   onTap: () {
+              //     Navigator.push(context,
+              //         MaterialPageRoute(builder: (context) => ProfileScreen()));
+              //   },
+              //   child: CircleAvatar(
+              //     radius: 25,
+              //     backgroundImage: NetworkImage(imageUrl),
+              //   ),
+              // ),
             ],
           ),
         );
@@ -494,6 +502,78 @@ class HomeScreen extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.favorite), label: ""),
         BottomNavigationBarItem(icon: Icon(Icons.list), label: ""),
       ],
+    );
+  }
+}
+
+class CustomDrawer extends StatelessWidget {
+  final VoidCallback onLogout;
+
+  const CustomDrawer({super.key, required this.onLogout});
+
+  @override
+  Widget build(BuildContext context) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    return Drawer(
+      child: FutureBuilder<QuerySnapshot>(
+        future: FirebaseFirestore.instance
+            .collection('users')
+            .where('email', isEqualTo: currentUser?.email ?? '')
+            .limit(1)
+            .get(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          var data = snapshot.data!.docs.first.data() as Map<String, dynamic>;
+          String name = data['nick_name'] ?? 'User';
+          String imagePath =
+              data['image_path'] ?? 'https://i.ibb.co/7C5jfjq/placeholder.jpg';
+          String role = data['role'] ?? 'user';
+
+          return Column(
+            children: [
+              UserAccountsDrawerHeader(
+                accountName: Text(name),
+                accountEmail: Text(currentUser?.email ?? ''),
+                currentAccountPicture: CircleAvatar(
+                  backgroundImage: NetworkImage(imagePath),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.person),
+                title: Text('Profile'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/profile');
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.home),
+                title: Text(role == 'worker' ? 'My List' : 'My Real Estate'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/my_properties');
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.favorite),
+                title: Text('My Favorite'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/favorite');
+                },
+              ),
+              Spacer(),
+              Divider(),
+              ListTile(
+                leading: Icon(Icons.logout, color: Colors.red),
+                title: Text('Logout', style: TextStyle(color: Colors.red)),
+                onTap: onLogout,
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
