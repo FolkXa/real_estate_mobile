@@ -5,8 +5,8 @@ import 'package:real_estate_project/my_property_screen.dart';
 import 'package:real_estate_project/profile_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'login_screen.dart';
-import 'signup_screen.dart';
 import 'home_screen.dart';
+import 'screens/sign_up.dart';
 
 const FirebaseOptions android = FirebaseOptions(
   apiKey: 'AIzaSyChHwsM17SBFySEgtHIJtzqRWI0kkJ6kWo',
@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => LoginScreen(),
-        '/signup': (context) => SignUpScreen(),
+        '/signup': (context) => SignupScreen(),
         '/home': (context) => HomeScreen(),
         '/profile': (context) => ProfileScreen(),
         '/my_properties': (context) => MyPropertyScreen(),
