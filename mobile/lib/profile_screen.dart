@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:real_estate_project/CameraScreen.dart';
 import 'package:real_estate_project/services/user_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/widgets.dart';
@@ -185,17 +186,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ListTile(
               leading: Icon(Icons.photo_camera),
               title: Text('ถ่ายรูปใหม่'),
-              onTap: () async {
+              onTap: () {
                 Navigator.pop(context);
-                _pickAndPreviewImage(ImageSource.camera);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CameraScreen(
+                        onImageTaken: (imagePath) async {
+                          final imageFile = File(imagePath);
+
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text('ยืนยันการเปลี่ยนรูปโปรไฟล์'),
+                              content: Image.file(imageFile),
+                              actions: [
+                                TextButton(
+                                  child: Text("ยกเลิก"),
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                ),
+                                ElevatedButton(
+                                  child: Text("ยืนยัน"),
+                                  onPressed: () => Navigator.pop(context, true),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm == true) {
+                            final newImageUrl =
+                                await _userService.changeProfileImage(
+                              controllers["image_path"]?.text ?? "",
+                              imageFile,
+                            );
+
+                            if (newImageUrl != null) {
+                              setState(() {
+                                controllers["image_path"]?.text = newImageUrl;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text('เปลี่ยนรูปโปรไฟล์สำเร็จ')),
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                  );
+                });
               },
             ),
             ListTile(
               leading: Icon(Icons.photo_library),
               title: Text('เลือกรูปจากแกลเลอรี'),
-              onTap: () async {
+              onTap: () {
                 Navigator.pop(context);
-                _pickAndPreviewImage(ImageSource.gallery);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _pickAndPreviewImage(ImageSource.gallery);
+                });
               },
             ),
           ],
