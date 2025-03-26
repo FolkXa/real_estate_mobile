@@ -489,11 +489,13 @@ class HomeScreen extends StatelessWidget {
   Widget _buildBottomNavigation() {
     return BottomNavigationBar(
       items: [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
-        BottomNavigationBarItem(icon: Icon(Icons.search), label: ""),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: ""),
-        BottomNavigationBarItem(icon: Icon(Icons.list), label: ""),
+        BottomNavigationBarItem(icon: Icon(Icons.home, color: Colors.green), label: ""),
+        BottomNavigationBarItem(icon: Icon(Icons.search, color: Colors.green), label: ""),
+        BottomNavigationBarItem(icon: Icon(Icons.favorite, color: Colors.green), label: ""),
+        BottomNavigationBarItem(icon: Icon(Icons.list, color: Colors.green), label: ""),
+        BottomNavigationBarItem(icon: Icon(Icons.person, color: Colors.green), label: ""),
       ],
+      currentIndex: 0,
     );
   }
 }

@@ -94,6 +94,15 @@ class _SignupScreenState extends State<SignupScreen> {
           .orderBy('user_id', descending: true)
           .limit(1)
           .get();
+      print("User ID: ${userSnapshot.docs.first.data() as Map<String, dynamic>}");
+      final QuerySnapshot usersSnapshot = await _firestore
+          .collection('users')
+          .get();
+      print("Number of users: ${usersSnapshot.docs.length}");
+      for (var doc in usersSnapshot.docs) {
+        print(doc.data());
+      }
+
       
       int nextUserId = 1;
       if (userSnapshot.docs.isNotEmpty) {
