@@ -1,12 +1,90 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:real_estate_project/RealEstateCard.dart';
 import 'package:real_estate_project/SearchPage.dart';
 import 'package:real_estate_project/profile_screen.dart';
 import 'package:real_estate_project/screens/property_detail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:real_estate_project/sub_category_screen.dart';
+import 'package:shimmer/shimmer.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String selectedCategory = "All";
+  Set<int> favoriteIds = {};
+  final ScrollController _scrollController = ScrollController();
+
+  final currentUser = FirebaseAuth.instance.currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchFavorites();
+  }
+
+  void fetchFavorites() async {
+    final userEmail = FirebaseAuth.instance.currentUser?.email;
+
+    final userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: userEmail)
+        .limit(1)
+        .get();
+
+    if (userSnapshot.docs.isEmpty) return;
+    final userId = userSnapshot.docs.first['user_id'];
+
+    final favSnapshot = await FirebaseFirestore.instance
+        .collection('favorite_real_estate')
+        .where('user_id', isEqualTo: userId)
+        .get();
+
+    setState(() {
+      favoriteIds =
+          favSnapshot.docs.map((doc) => doc['real_estate_id'] as int).toSet();
+    });
+  }
+
+  Future<bool> toggleFavoriteInFirestore(int realEstateId) async {
+    final userEmail = currentUser?.email;
+    final userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: userEmail)
+        .limit(1)
+        .get();
+
+    if (userSnapshot.docs.isEmpty) return false;
+    final userId = userSnapshot.docs.first['user_id'];
+
+    final favoriteRef =
+        FirebaseFirestore.instance.collection('favorite_real_estate');
+
+    final existing = await favoriteRef
+        .where('user_id', isEqualTo: userId)
+        .where('real_estate_id', isEqualTo: realEstateId)
+        .get();
+
+    if (existing.docs.isNotEmpty) {
+      await favoriteRef.doc(existing.docs.first.id).delete();
+      favoriteIds.remove(realEstateId); // อัปเดตใน memory เฉย ๆ
+      return false; // ❌ ถูกลบ
+    } else {
+      await favoriteRef.add({
+        "user_id": userId,
+        "real_estate_id": realEstateId,
+        "favorite_id": DateTime.now().millisecondsSinceEpoch,
+      });
+      favoriteIds.add(realEstateId); // ✅ เพิ่ม
+      return true;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,6 +102,7 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -164,22 +243,41 @@ class HomeScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildCategoryItem("All", isSelected: true),
-          _buildCategoryItem("House"),
-          _buildCategoryItem("Apartment"),
-          _buildCategoryItem("Condo"),
+          _buildCategoryItem("All"),
+          _buildCategoryItem("บ้านเดี่ยว"),
+          _buildCategoryItem("ทาวน์เฮ้าส์"),
+          _buildCategoryItem("คอนโด"),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryItem(String title, {bool isSelected = false}) {
-    return Chip(
-      label: Text(title),
-      backgroundColor: isSelected ? Colors.purple : Colors.grey[300],
-      labelStyle: TextStyle(
+  Widget _buildCategoryItem(String title) {
+    bool isSelected = selectedCategory == title;
+
+    return GestureDetector(
+      onTap: () {
+        if (title == "All") {
+          setState(() {
+            selectedCategory = title;
+          });
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SubCategoryScreen(category: title),
+            ),
+          );
+        }
+      },
+      child: Chip(
+        label: Text(title),
+        backgroundColor: isSelected ? Colors.purple : Colors.grey[300],
+        labelStyle: TextStyle(
           color: isSelected ? Colors.white : Colors.black,
-          fontWeight: FontWeight.bold),
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
@@ -220,7 +318,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-          16.0, 0.0, 16.0, 0.0), // ลดระยะห่างด้านบน/ล่างเป็น 0
+          16.0, 16.0, 16.0, 16.0), // ลดระยะห่างด้านบน/ล่างเป็น 0
       child: Text(
         title,
         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -296,28 +394,35 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildEstateAgents() {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('users').snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .where('role', isEqualTo: 'worker')
+          .where('active', isEqualTo: true)
+          .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
+
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(child: Text("ไม่มีข้อมูลเอเจนต์"));
         }
 
-        var users = snapshot.data!.docs.take(3).toList(); // แสดง 3 คนแรก
+        var agents = snapshot.data!.docs.take(3).toList();
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: users.map((doc) {
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: agents.map((doc) {
               var data = doc.data() as Map<String, dynamic>;
-              String nickName = data["nick_name"] ?? "No Name";
-              String imagePath =
-                  data["image_path"] ?? "assets/images/default_avatar.png";
+              String name = data['nick_name'] ?? 'Agent';
+              String imagePath = data['image_path'] ??
+                  'https://i.ibb.co/7C5jfjq/placeholder.jpg';
 
-              return _buildAgentItem(imagePath, nickName);
+              return Expanded(
+                child: _buildAgentAvatar(name, imagePath),
+              );
             }).toList(),
           ),
         );
@@ -325,18 +430,17 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAgentItem(String imagePath, String nickName) {
+  Widget _buildAgentAvatar(String name, String imageUrl) {
     return Column(
       children: [
         CircleAvatar(
           radius: 30,
-          backgroundImage: AssetImage(imagePath) as ImageProvider,
-          onBackgroundImageError: (_, __) =>
-              AssetImage("assets/images/default_avatar.png"),
+          backgroundImage: NetworkImage(imageUrl),
+          onBackgroundImageError: (_, __) {},
         ),
-        SizedBox(height: 5), // ระยะห่างระหว่างรูปกับชื่อ
+        const SizedBox(height: 5),
         Text(
-          nickName,
+          name,
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           overflow: TextOverflow.ellipsis,
         ),
@@ -347,6 +451,13 @@ class HomeScreen extends StatelessWidget {
   /// Nearby Estates
 
   Widget _buildNearbyEstates() {
+    var query = FirebaseFirestore.instance
+        .collection('real_estate')
+        .where('active', isEqualTo: true);
+
+    if (selectedCategory != "All") {
+      query = query.where('type_realestate', isEqualTo: selectedCategory);
+    }
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('real_estate')
@@ -365,131 +476,66 @@ class HomeScreen extends StatelessWidget {
         var estates = snapshot.data!.docs;
 
         return GridView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.75,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
-          itemCount: estates.length,
-          itemBuilder: (context, index) {
-            var data = estates[index].data() as Map<String, dynamic>;
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.75,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+            ),
+            itemCount: estates.length,
+            itemBuilder: (context, index) {
+              var data = estates[index].data() as Map<String, dynamic>;
 
-            int realEstateId = data["real_estate_id"];
-            String price = data["price"].toString();
-            int viewCount = data["view"] ?? 0;
-            String location = data["province"] ?? "ไม่ระบุที่ตั้ง";
+              int realEstateId = data["real_estate_id"];
+              String price = data["price"].toString();
+              String name = data["name"] ?? "ไม่ระบุชื่อ";
+              String location = data["province"] ?? "ไม่ระบุที่ตั้ง";
+              String sellType = data["type_sell"] ?? "ขายขาด";
 
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PropertyDetailScreen(
-                        realEstateId: realEstateId,
-                      ),
-                    ));
-              },
-              child: FutureBuilder<QuerySnapshot>(
-                future: FirebaseFirestore.instance
-                    .collection('image_real_estate')
-                    .where('real_estate_id', isEqualTo: realEstateId)
-                    .limit(1)
-                    .get(),
-                builder: (context, imageSnapshot) {
-                  if (imageSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-
-                  String imagePath = "assets/images/house1.jpg";
-
-                  if (imageSnapshot.hasData &&
-                      imageSnapshot.data!.docs.isNotEmpty) {
-                    var imageData = imageSnapshot.data!.docs.first.data()
-                        as Map<String, dynamic>;
-                    imagePath =
-                        imageData["image_path"] ?? "assets/images/house1.jpg";
-                  }
-
-                  return _buildNearbyCard(
-                    imagePath,
-                    price,
-                    viewCount,
-                    location,
+                      builder: (context) =>
+                          PropertyDetailScreen(realEstateId: realEstateId),
+                    ),
                   );
                 },
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+                child: FutureBuilder<QuerySnapshot>(
+                  future: FirebaseFirestore.instance
+                      .collection('image_real_estate')
+                      .where('real_estate_id', isEqualTo: realEstateId)
+                      .where('title_img', isEqualTo: 1)
+                      .limit(1)
+                      .get(),
+                  builder: (context, imageSnapshot) {
+                    String imagePath = "assets/images/house1.jpg";
 
-  Widget _buildNearbyCard(
-      String imagePath, String price, int viewCount, String location) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-      elevation: 5, // เพิ่มเงาให้ดูมีมิติ
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // รูปภาพ
-          ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(10.0)),
-            child: Image.network(
-              imagePath,
-              fit: BoxFit.cover,
-              height: 120,
-              width: double.infinity,
-            ),
-          ),
-          // รายละเอียดอสังหาริมทรัพย์
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ราคา
-                Text("฿$price",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green)),
-                SizedBox(height: 4),
-                // จังหวัด
-                Row(
-                  children: [
-                    Icon(Icons.location_on, size: 16, color: Colors.red),
-                    SizedBox(width: 4),
-                    Expanded(
-                      child: Text(location,
-                          style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87),
-                          overflow: TextOverflow.ellipsis),
-                    ),
-                  ],
+                    if (imageSnapshot.hasData &&
+                        imageSnapshot.data!.docs.isNotEmpty) {
+                      var imageData = imageSnapshot.data!.docs.first.data()
+                          as Map<String, dynamic>;
+                      imagePath = imageData["image_path"] ?? imagePath;
+                    }
+
+                    return RealEstateCard(
+                      realEstateId: realEstateId,
+                      imagePath: imagePath,
+                      price: price,
+                      name: name,
+                      location: location,
+                      sellType: sellType,
+                      isInitiallyFavorite: favoriteIds.contains(realEstateId),
+                      onToggleFavorite: toggleFavoriteInFirestore,
+                    );
+                  },
                 ),
-                SizedBox(height: 4),
-                // จำนวนวิว
-                Row(
-                  children: [
-                    Icon(Icons.visibility, size: 16, color: Colors.grey),
-                    SizedBox(width: 4),
-                    Text("$viewCount views",
-                        style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+              );
+            });
+      },
     );
   }
 
