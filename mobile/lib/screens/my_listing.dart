@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import '../models/real_estate.dart';
 import '../models/user.dart';
 import '../services/firebase_service.dart';
-import '../utils/constants.dart';
 import '../utils/formatters.dart';
+import 'edit_listing.dart';
 import 'property_detail.dart';
 
 class MyListingsScreen extends StatefulWidget {
@@ -178,146 +177,220 @@ class PropertyListingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(16)),
-                child: SizedBox(
-                  width: 150,
-                  height: 150,
-                  child: Stack(
-                    children: [
-                      Image.network(
-                        property.images.isNotEmpty
-                            ? property.images.first
-                            : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_JsEVYJcvZScI2sYdQq7FXB7ZIiSvucI0lA&s',
-                        width: 150,
-                        height: 150,
-                        fit: BoxFit.scaleDown,
-                      ),
-                      Positioned(
-                        bottom: 8,
-                        left: 6,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(16),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Property content
+          GestureDetector(
+            onTap: onTap,
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 16),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.all(Radius.circular(16)),
+                    child: SizedBox(
+                      width: 150,
+                      height: 150,
+                      child: Stack(
+                        children: [
+                          Image.network(
+                            property.images.isNotEmpty
+                                ? property.images.first
+                                : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_JsEVYJcvZScI2sYdQq7FXB7ZIiSvucI0lA&s',
+                            width: 150,
+                            height: 150,
+                            fit: BoxFit.scaleDown,
                           ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.home, color: Colors.white, size: 10),
-                              const SizedBox(width: 4),
-                              Text(
-                                property.typeRealestate,
-                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          Positioned(
+                            bottom: 8,
+                            left: 6,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      if (property.premiumPromote)
-                        Positioned(
-                          bottom: 8,
-                          right: 6,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.amber,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Text(
-                              "Premium",
-                              style: TextStyle(
-                                color: Colors.black87,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.home, color: Colors.white, size: 10),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    property.typeRealestate,
+                                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                        ),
-                    ],
+                          if (property.premiumPromote)
+                            Positioned(
+                              bottom: 8,
+                              right: 6,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: const Text(
+                                  "Premium",
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            // Property Details
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      property.details,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
+                // Property Details
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.remove_red_eye, color: Colors.amber, size: 16),
-                        const SizedBox(width: 4),
                         Text(
-                          (property.view).toString(),
-                          style: const TextStyle(fontSize: 14),
+                          property.details,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on, color: Colors.grey, size: 16),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            "${property.address} ${property.amphur} ${property.tambon} ${property.province}",
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.remove_red_eye, color: Colors.amber, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              (property.view).toString(),
+                              style: const TextStyle(fontSize: 14),
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on, color: Colors.grey, size: 16),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                "${property.address} ${property.amphur} ${property.tambon} ${property.province}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "\฿ ${Formatters.formatCurrency(property.price)}",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.indigo,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "\฿ ${Formatters.formatCurrency(property.price)}",
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.indigo,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Action buttons
+          Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditListingScreen(
+                            realEstateId: property.realEstateId,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: const Text("Edit"),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.blue,
+                      side: const BorderSide(color: Colors.blue),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      // Implement delete functionality
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("Delete Listing"),
+                          content: const Text("Are you sure you want to delete this listing?"),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("Cancel"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                // Implement delete
+                                Navigator.pop(context);
+                              },
+                              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.delete, size: 16),
+                    label: const Text("Delete"),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

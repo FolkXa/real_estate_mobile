@@ -42,7 +42,7 @@ class NearbyPropertyCard extends StatelessWidget {
                       topLeft: Radius.circular(16),
                       topRight: Radius.circular(16),
                     ),
-                    showLoading: false,
+                    isClickable: false,
                   ),
                   // Price Tag
                   Positioned(
@@ -91,7 +91,7 @@ class NearbyPropertyCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'home ${property.realEstateId}',
+                    property.name,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
@@ -99,7 +99,7 @@ class NearbyPropertyCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 14),
+                      const Icon(Icons.remove_red_eye, color: Colors.amber, size: 14),
                       const SizedBox(width: 4),
                       Text(
                         Formatters.formatRating(property.view),

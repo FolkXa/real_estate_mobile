@@ -134,24 +134,24 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                       ),
                     ),
                     // Property Type Badge
-                    Positioned(
-                      bottom: 8,
-                      left: 20,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          property.typeRealestate,
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
+                    // Positioned(
+                    //   bottom: 65,
+                    //   left: 16,
+                    //   child: Container(
+                    //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    //     decoration: BoxDecoration(
+                    //       color: AppColors.primary,
+                    //       borderRadius: BorderRadius.circular(20),
+                    //     ),
+                    //     child: Text(
+                    //       property.typeRealestate,
+                    //       style: const TextStyle(color: Colors.white),
+                    //     ),
+                    //   ),
+                    // ),
                     // 360 View Button
                     Positioned(
-                      bottom: 8,
+                      bottom: 16,
                       right: 20,
                       child: Container(
                         padding: const EdgeInsets.all(8),
@@ -171,24 +171,27 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                 // Property Title and Price
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'home${property.realEstateId}',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  child: Flexible(
+                    child: Text(
+                      property.name,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text(
-                        '\$ ${Formatters.formatCurrency(property.price)}',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0, bottom: 8.0),
+                  child: Text(
+                    '\฿ ${Formatters.formatCurrency(property.price)}',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 
@@ -316,6 +319,45 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                         color: Colors.red,
                       ),
                     ],
+                  ),
+                ),
+
+                // Details
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'Details',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardBackground,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        // Full Address
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                property.details,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                            ),
+                          ],
+                        ),
+                        
+                      ],
+                    ),
                   ),
                 ),
                 

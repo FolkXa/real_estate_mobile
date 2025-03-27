@@ -7,6 +7,7 @@ import 'dart:io';
 import '../models/user.dart';
 import '../services/firebase_service.dart';
 import '../utils/constants.dart';
+import '../utils/image_viewer.dart';
 import '../utils/permisssion.dart';
 
 class CreateListingScreen extends StatefulWidget {
@@ -38,13 +39,13 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   bool _isPremium = false;
   bool _isLoading = false;
   String _errorMessage = '';
-  List<File> _selectedImages = [];
+  List<String> _selectedImages = [];
   User? _currentUser;
   List<int> _selectedTags = [];
   List<User?> _workers = [];
   int _workerService = 1; // Default value
   
-  final List<String> _propertyTypes = ['คอนโด', 'บ้าน', 'ทาวน์เฮาส์', 'ที่ดิน', 'อพาร์ทเมนท์', 'วิลล่า'];
+  final List<String> _estateTypes = ['คอนโด', 'บ้าน', 'ทาวน์เฮาส์', 'ที่ดิน', 'อพาร์ทเมนท์', 'วิลล่า'];
   final List<String> _sellTypes = ['ขาย', 'เช่า'];
   
   // Map to store available tags
@@ -112,7 +113,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     
     if (images.isNotEmpty) {
       setState(() {
-        _selectedImages.addAll(images.map((image) => File(image.path)).toList());
+        _selectedImages.addAll(images.map((image) => image.path).toList());
       });
     }
   }
@@ -169,10 +170,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     int imageIndex = 1;
     
     for (var imageFile in _selectedImages) {
-      final String fileName = 'property_${realEstateId}_${DateTime.now().millisecondsSinceEpoch}';
+      final String fileName = 'estate_${realEstateId}_${DateTime.now().millisecondsSinceEpoch}';
       final Reference storageRef = _storage.ref().child('image_real_estate/$fileName');
       
-      final UploadTask uploadTask = storageRef.putFile(imageFile);
+      final UploadTask uploadTask = storageRef.putFile(File(imageFile));
       final TaskSnapshot taskSnapshot = await uploadTask;
       
       final String downloadUrl = await taskSnapshot.ref.getDownloadURL();
@@ -303,7 +304,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       await _saveTags(nextRealEstateId);
       
       // Navigate back to listings
-      Navigator.pop(context);
+      Navigator.pushNamedAndRemoveUntil(context, '/my-listings', (_) => false);
     } catch (e) {
       setState(() {
         _errorMessage = 'Error creating listing: $e';
@@ -378,9 +379,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                           ),
                         ),
                       
-                      // Property Images
+                      // Estate Images
                       const Text(
-                        "Property Images",
+                        "Estate Images",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -443,60 +444,74 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                                 scrollDirection: Axis.horizontal,
                                 itemCount: _selectedImages.length,
                                 itemBuilder: (context, index) {
-                                  return Container(
-                                    width: 100,
-                                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      image: DecorationImage(
-                                        image: FileImage(_selectedImages[index]),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    child: Stack(
-                                      children: [
-                                        Positioned(
-                                          top: 0,
-                                          right: 0,
-                                          child: InkWell(
-                                            onTap: () {
-                                              setState(() {
-                                                _selectedImages.removeAt(index);
-                                              });
-                                            },
-                                            child: Container(
-                                              padding: const EdgeInsets.all(4),
-                                              decoration: const BoxDecoration(
-                                                color: Colors.red,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: const Icon(
-                                                Icons.close,
-                                                size: 16,
-                                                color: Colors.white,
-                                              ),
-                                            ),
+                                  return GestureDetector(
+                                    onTap: () {
+                                      // Open full-screen image viewer when tapping on an image
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ImageViewer(
+                                            images: _selectedImages,
+                                            initialIndex: index,
                                           ),
                                         ),
-                                        if (index == 0)
+                                      );
+                                    },
+                                    child: Container(
+                                      width: 100,
+                                      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        image: DecorationImage(
+                                          image: FileImage(File(_selectedImages[index])),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      child: Stack(
+                                        children: [
                                           Positioned(
-                                            bottom: 0,
-                                            left: 0,
+                                            top: 0,
                                             right: 0,
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(vertical: 2),
-                                              color: Colors.black54,
-                                              child: const Text(
-                                                "Main Image",
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
+                                            child: InkWell(
+                                              onTap: () {
+                                                setState(() {
+                                                  _selectedImages.removeAt(index);
+                                                });
+                                              },
+                                              child: Container(
+                                                padding: const EdgeInsets.all(4),
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.red,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.close,
+                                                  size: 16,
                                                   color: Colors.white,
-                                                  fontSize: 10,
                                                 ),
                                               ),
                                             ),
                                           ),
-                                      ],
+                                          if (index == 0)
+                                            Positioned(
+                                              bottom: 0,
+                                              left: 0,
+                                              right: 0,
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(vertical: 2),
+                                                color: Colors.black54,
+                                                child: const Text(
+                                                  "Main Image",
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
                                     ),
                                   );
                                 },
@@ -508,9 +523,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       
                       const SizedBox(height: 16),
                       
-                      // Property Name
+                      // Estate Name
                       const Text(
-                        "Property Name",
+                        "Estate Name",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -536,9 +551,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       
                       const SizedBox(height: 16),
                       
-                      // Property Type
+                      // Estate Type
                       const Text(
-                        "Property Type",
+                        "Estate Type",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -556,7 +571,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                           child: DropdownButton<String>(
                             value: _selectedType,
                             isExpanded: true,
-                            items: _propertyTypes.map((String type) {
+                            items: _estateTypes.map((String type) {
                               return DropdownMenuItem<String>(
                                 value: type,
                                 child: Text(type),
@@ -614,7 +629,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       
                       const SizedBox(height: 16),
                       
-                      // Property Details (Area, Bedrooms, Bathrooms)
+                      // Estate Details (Area, Bedrooms, Bathrooms)
                       Row(
                         children: [
                           Expanded(
@@ -622,7 +637,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  "Area (sq.m)",
+                                  "Area (sq.wa)",
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -879,7 +894,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       
                       // Tags
                       const Text(
-                        "Property Tags",
+                        "Estate Tags",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -915,7 +930,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                       
                       // Details
                       const Text(
-                        "Property Description",
+                        "Estate Description",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -926,7 +941,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                         controller: _detailsController,
                         maxLines: 5,
                         decoration: InputDecoration(
-                          hintText: "Describe your property...",
+                          hintText: "Describe your estate...",
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(

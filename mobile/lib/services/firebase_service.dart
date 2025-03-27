@@ -108,22 +108,13 @@ class FirebaseService {
           .where('user_id', isEqualTo: userId)
           .where('active', isEqualTo: true)
           .get();
-
-      List<RealEstate> realEstates = snapshot.docs
-          .map((doc) => RealEstate.fromMap(doc.data() as Map<String, dynamic>))
-          .toList();
+      List<RealEstate> realEstates = [];
+      for (var doc in snapshot.docs) {
+        realEstates.add(RealEstate.fromMap(doc.data() as Map<String, dynamic>));
+      }
       for (var realEstate in realEstates) {
-        final QuerySnapshot imageSnapshot = await _firestore
-            .collection('image_real_estate')
-            .where('real_estate_id', isEqualTo: realEstate.realEstateId)
-            .get();
-
-        if (imageSnapshot.docs.isNotEmpty) {
-          for (var doc in imageSnapshot.docs) {
-            final imageData = doc.data() as Map<String, dynamic>;
-            realEstate.images.add(imageData['image_path']);
-          }
-        }
+        final List<String> images = await getImagesForRealEstate(realEstate.realEstateId);
+        realEstate.images.addAll(images);
       }
 
       return realEstates;
@@ -140,5 +131,42 @@ class FirebaseService {
         .where('real_estate_id', isEqualTo: realEstateId)
         .limit(1)
         .snapshots();
+  }
+
+  Future<List<String>> getImagesForRealEstate(int realEstateId) async {
+    try {
+      final QuerySnapshot snapshot = await _firestore
+          .collection('image_real_estate')
+          .where('real_estate_id', isEqualTo: realEstateId)
+          .orderBy('image_id', descending: false)
+          .get();
+      
+      if (snapshot.docs.isEmpty) {
+        print('No images found for real estate ID: $realEstateId');
+        return [];
+      }
+      
+      // Extract image paths from the documents
+      List<String> imagePaths = [];
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final String? imagePath = data['image_path'] as String?;
+        
+        if (imagePath != null && imagePath.isNotEmpty) {
+          // Validate the URL format
+          if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+            imagePaths.add(imagePath);
+          } else {
+            print('Invalid image URL format: $imagePath');
+          }
+        }
+      }
+      
+      print('Found ${imagePaths.length} images for real estate ID: $realEstateId');
+      return imagePaths;
+    } catch (e) {
+      print('Error fetching images for real estate ID $realEstateId: $e');
+      return [];
+    }
   }
 }
