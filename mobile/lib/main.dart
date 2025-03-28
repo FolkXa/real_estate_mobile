@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:real_estate_project/favorite_screen.dart';
-import 'package:real_estate_project/my_property_screen.dart';
-import 'package:real_estate_project/profile_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:real_estate_project/sub_category_screen.dart';
-import 'package:real_estate_project/screens/my_listing.dart';
-import 'package:real_estate_project/screens/create_listing.dart';
-
+import 'package:provider/provider.dart';
+import 'screens/settings_screen.dart';
+import 'theme.dart';
+import 'theme_provider.dart';
 import 'login_screen.dart';
 import 'home_screen.dart';
 import 'screens/sign_up.dart';
+import 'package:real_estate_project/favorite_screen.dart';
+import 'package:real_estate_project/my_property_screen.dart';
+import 'package:real_estate_project/profile_screen.dart';
+import 'package:real_estate_project/sub_category_screen.dart';
+import 'package:real_estate_project/screens/my_listing.dart';
+import 'package:real_estate_project/screens/create_listing.dart';
 
 const FirebaseOptions android = FirebaseOptions(
   apiKey: 'AIzaSyChHwsM17SBFySEgtHIJtzqRWI0kkJ6kWo',
@@ -31,16 +34,28 @@ const FirebaseOptions ios = FirebaseOptions(
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env"); // โหลด .env ก่อน runApp
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(options: ios);
-  runApp(MyApp());
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
       title: 'Real Estate App',
+      debugShowCheckedModeBanner: false,
+      themeMode: themeProvider.themeMode,
+      theme: MyThemes.lightTheme,
+      darkTheme: MyThemes.darkTheme,
       initialRoute: '/',
       routes: {
         '/': (context) => LoginScreen(),
@@ -53,6 +68,7 @@ class MyApp extends StatelessWidget {
         '/category': (context) => SubCategoryScreen(category: "บ้านเดี่ยว"),
         '/my-listings': (context) => const MyListingsScreen(),
         '/create-listing': (context) => const CreateListingScreen(),
+        '/settings': (context) => const SettingsScreen(),
       },
     );
   }

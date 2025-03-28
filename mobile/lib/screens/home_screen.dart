@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:real_estate_project/RealEstateCard.dart';
-import 'package:real_estate_project/SearchPage.dart';
-import 'package:real_estate_project/agent_profile_screen.dart';
-import 'package:real_estate_project/profile_screen.dart';
+import 'package:real_estate_project/screens/RealEstateCard.dart';
+import 'package:real_estate_project/screens/SearchPage.dart';
+import 'package:real_estate_project/screens/agent_profile_screen.dart';
+import 'package:real_estate_project/screens/profile_screen.dart';
 import 'package:real_estate_project/screens/property_detail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:real_estate_project/sub_category_screen.dart';
-import 'package:real_estate_project/topLocation_screen.dart';
+import 'package:real_estate_project/screens/sub_category_screen.dart';
+import 'package:real_estate_project/screens/topLocation_screen.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:real_estate_project/services/firebase_service.dart';
 
@@ -630,7 +630,7 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (context, index) {
               var data = estates[index].data() as Map<String, dynamic>;
 
-              int realEstateId = data["real_estate_id"];
+              int realEstateId = (data["real_estate_id"] as num).toInt();
               String price = data["price"].toString();
               String name = data["name"] ?? "ไม่ระบุชื่อ";
               String location = data["province"] ?? "ไม่ระบุที่ตั้ง";
@@ -738,6 +738,13 @@ class CustomDrawer extends StatelessWidget {
                 title: Text('My Favorite'),
                 onTap: () {
                   Navigator.pushNamed(context, '/favorite');
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.settings),
+                title: Text('Settings'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/settings');
                 },
               ),
               Spacer(),

@@ -38,6 +38,7 @@ class _RealEstateCardState extends State<RealEstateCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final formattedPrice =
         NumberFormat("#,###", "en_US").format(int.tryParse(widget.price) ?? 0);
     final displayPrice =
@@ -47,6 +48,7 @@ class _RealEstateCardState extends State<RealEstateCard> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 5,
       margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+      color: theme.cardColor, // 💡 รองรับทั้งธีมมืด/สว่าง
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: Column(
@@ -70,27 +72,26 @@ class _RealEstateCardState extends State<RealEstateCard> {
                       final newStatus =
                           await widget.onToggleFavorite(widget.realEstateId);
 
-                      // อัปเดต icon
                       setState(() {
                         isFavorite = newStatus;
                       });
 
-                      // แสดง SnackBar แจ้งเตือน
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
                             newStatus
                                 ? 'เพิ่มเข้ารายการโปรดแล้ว'
                                 : 'ลบออกจากรายการโปรดแล้ว',
-                            style: TextStyle(fontSize: 14),
+                            style: const TextStyle(fontSize: 14),
                           ),
-                          duration: Duration(seconds: 2),
-                          backgroundColor: Colors.lightGreen,
+                          duration: const Duration(seconds: 2),
+                          backgroundColor: theme.colorScheme.secondaryContainer,
                         ),
                       );
                     },
                     child: CircleAvatar(
-                      backgroundColor: Colors.white.withOpacity(0.9),
+                      backgroundColor:
+                          theme.colorScheme.surface.withOpacity(0.9),
                       child: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
                         color: Colors.red,
@@ -106,29 +107,41 @@ class _RealEstateCardState extends State<RealEstateCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(displayPrice,
-                      style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green[700])),
-                  SizedBox(height: 4),
-                  Text(widget.name,
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis),
-                  SizedBox(height: 4),
+                  Text(
+                    displayPrice,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.name,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: theme.textTheme.bodyMedium?.color,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.location_on, color: Colors.red, size: 16),
-                      SizedBox(width: 4),
+                      const Icon(Icons.location_on,
+                          color: Colors.red, size: 16),
+                      const SizedBox(width: 4),
                       Expanded(
-                        child: Text(widget.location,
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w500),
-                            overflow: TextOverflow.ellipsis),
+                        child: Text(
+                          widget.location,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: theme.textTheme.bodyMedium?.color,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),

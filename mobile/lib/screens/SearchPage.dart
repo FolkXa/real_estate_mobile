@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:real_estate_project/SearchResultPage.dart';
+import 'package:real_estate_project/screens/SearchResultPage.dart';
 
 class SearchPage extends StatefulWidget {
   @override
