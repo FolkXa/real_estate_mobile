@@ -36,8 +36,9 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) return; // User canceled the sign-in flow
-      
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -81,7 +82,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8E6F8), // Light pink/lavender background
+      backgroundColor:
+          const Color(0xFFF8E6F8), // Light pink/lavender background
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -90,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 60),
-                
+
                 // Logo
                 Container(
                   width: 120,
@@ -105,9 +107,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     size: 60,
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Company name
                 const Text(
                   "Real Estate App",
@@ -116,9 +118,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                
+
                 const SizedBox(height: 10),
-                
+
                 // Email field
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,16 +143,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         keyboardType: TextInputType.emailAddress,
                         decoration: const InputDecoration(
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
                           hintText: "Email",
                         ),
                       ),
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Password field
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,11 +176,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
                           hintText: "Password",
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                               color: Colors.grey,
                             ),
                             onPressed: () {
@@ -191,9 +197,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Forgot password
                 Align(
                   alignment: Alignment.centerRight,
@@ -208,9 +214,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Login button
                 SizedBox(
                   width: double.infinity,
@@ -233,9 +239,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Or divider
                 const Text(
                   "Or",
@@ -244,9 +250,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Colors.grey,
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Google sign in button
                 SocialLoginButton(
                   onPressed: _signInWithGoogle,
@@ -256,18 +262,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 24,
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Facebook sign in button
                 SocialLoginButton(
                   onPressed: _signInWithFacebook,
                   text: "Continue with Facebook",
-                  icon: Icon(Icons.facebook, color: Colors.blue, size: 24,),
+                  icon: Icon(
+                    Icons.facebook,
+                    color: Colors.blue,
+                    size: 24,
+                  ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Sign up text
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -291,7 +301,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 32),
               ],
             ),
