@@ -8,6 +8,7 @@ import 'package:real_estate_project/screens/property_detail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:real_estate_project/sub_category_screen.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:real_estate_project/services/firebase_service.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -51,39 +52,39 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<bool> toggleFavoriteInFirestore(int realEstateId) async {
-    final userEmail = currentUser?.email;
-    final userSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('email', isEqualTo: userEmail)
-        .limit(1)
-        .get();
+  // Future<bool> toggleFavoriteInFirestore(int realEstateId) async {
+  //   final userEmail = currentUser?.email;
+  //   final userSnapshot = await FirebaseFirestore.instance
+  //       .collection('users')
+  //       .where('email', isEqualTo: userEmail)
+  //       .limit(1)
+  //       .get();
 
-    if (userSnapshot.docs.isEmpty) return false;
-    final userId = userSnapshot.docs.first['user_id'];
+  //   if (userSnapshot.docs.isEmpty) return false;
+  //   final userId = userSnapshot.docs.first['user_id'];
 
-    final favoriteRef =
-        FirebaseFirestore.instance.collection('favorite_real_estate');
+  //   final favoriteRef =
+  //       FirebaseFirestore.instance.collection('favorite_real_estate');
 
-    final existing = await favoriteRef
-        .where('user_id', isEqualTo: userId)
-        .where('real_estate_id', isEqualTo: realEstateId)
-        .get();
+  //   final existing = await favoriteRef
+  //       .where('user_id', isEqualTo: userId)
+  //       .where('real_estate_id', isEqualTo: realEstateId)
+  //       .get();
 
-    if (existing.docs.isNotEmpty) {
-      await favoriteRef.doc(existing.docs.first.id).delete();
-      favoriteIds.remove(realEstateId); // อัปเดตใน memory เฉย ๆ
-      return false; // ❌ ถูกลบ
-    } else {
-      await favoriteRef.add({
-        "user_id": userId,
-        "real_estate_id": realEstateId,
-        "favorite_id": DateTime.now().millisecondsSinceEpoch,
-      });
-      favoriteIds.add(realEstateId); // ✅ เพิ่ม
-      return true;
-    }
-  }
+  //   if (existing.docs.isNotEmpty) {
+  //     await favoriteRef.doc(existing.docs.first.id).delete();
+  //     favoriteIds.remove(realEstateId); // อัปเดตใน memory เฉย ๆ
+  //     return false; // ❌ ถูกลบ
+  //   } else {
+  //     await favoriteRef.add({
+  //       "user_id": userId,
+  //       "real_estate_id": realEstateId,
+  //       "favorite_id": DateTime.now().millisecondsSinceEpoch,
+  //     });
+  //     favoriteIds.add(realEstateId); // ✅ เพิ่ม
+  //     return true;
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -529,7 +530,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       location: location,
                       sellType: sellType,
                       isInitiallyFavorite: favoriteIds.contains(realEstateId),
-                      onToggleFavorite: toggleFavoriteInFirestore,
+                      onToggleFavorite:
+                          FirebaseService.toggleFavoriteInFirestore,
                     );
                   },
                 ),

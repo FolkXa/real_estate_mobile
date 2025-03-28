@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:real_estate_project/models/user.dart';
 import '../models/real_estate.dart';
 
@@ -26,7 +27,8 @@ class FirebaseService {
   }
 
   // Get nearby properties
-  Future<List<RealEstate>> getNearbyRealEstate(String province, int currentId) async {
+  Future<List<RealEstate>> getNearbyRealEstate(
+      String province, int currentId) async {
     try {
       final QuerySnapshot snapshot = await _firestore
           .collection('real_estate')
@@ -42,6 +44,60 @@ class FirebaseService {
     } catch (e) {
       print('Error fetching nearby properties: $e');
       return [];
+    }
+  }
+
+  Future<Set<int>> getFavoriteIds() async {
+    final userEmail = auth.FirebaseAuth.instance.currentUser?.email;
+
+    final userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: userEmail)
+        .limit(1)
+        .get();
+
+    if (userSnapshot.docs.isEmpty) return {};
+
+    final userId = userSnapshot.docs.first['user_id'];
+
+    final favSnapshot = await FirebaseFirestore.instance
+        .collection('favorite_real_estate')
+        .where('user_id', isEqualTo: userId)
+        .get();
+
+    return favSnapshot.docs.map((doc) => doc['real_estate_id'] as int).toSet();
+  }
+
+  static Future<bool> toggleFavoriteInFirestore(int realEstateId) async {
+    final userEmail = auth.FirebaseAuth.instance.currentUser?.email;
+
+    final userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: userEmail)
+        .limit(1)
+        .get();
+
+    if (userSnapshot.docs.isEmpty) return false;
+    final userId = userSnapshot.docs.first['user_id'];
+
+    final favoriteRef =
+        FirebaseFirestore.instance.collection('favorite_real_estate');
+
+    final existing = await favoriteRef
+        .where('user_id', isEqualTo: userId)
+        .where('real_estate_id', isEqualTo: realEstateId)
+        .get();
+
+    if (existing.docs.isNotEmpty) {
+      await favoriteRef.doc(existing.docs.first.id).delete();
+      return false;
+    } else {
+      await favoriteRef.add({
+        "user_id": userId,
+        "real_estate_id": realEstateId,
+        "favorite_id": DateTime.now().millisecondsSinceEpoch,
+      });
+      return true;
     }
   }
 
