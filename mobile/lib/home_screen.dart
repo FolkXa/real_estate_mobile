@@ -3,10 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:real_estate_project/RealEstateCard.dart';
 import 'package:real_estate_project/SearchPage.dart';
+import 'package:real_estate_project/agent_profile_screen.dart';
 import 'package:real_estate_project/profile_screen.dart';
 import 'package:real_estate_project/screens/property_detail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:real_estate_project/sub_category_screen.dart';
+import 'package:real_estate_project/topLocation_screen.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:real_estate_project/services/firebase_service.dart';
 
@@ -94,33 +96,124 @@ class _HomeScreenState extends State<HomeScreen> {
         FirebaseAuth.instance.signOut();
         Navigator.pushReplacementNamed(context, '/login');
       }),
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () {
-            _scaffoldKey.currentState!.openDrawer();
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
+      body: CustomScrollView(
         controller: _scrollController,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            _buildSearchBar(context),
-            _buildCategorySelector(),
-            _buildPromotionBanner(),
-            _buildSectionTitle("Featured Estates"),
-            _buildFeaturedEstates(),
-            _buildSectionTitle("Top Locations"),
-            _buildTopLocations(),
-            _buildSectionTitle("Estate Agent"),
-            _buildEstateAgents(),
-            _buildSectionTitle("Explore Nearby Estates"),
-            _buildNearbyEstates(),
-          ],
-        ),
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 220,
+            pinned: true,
+            backgroundColor: Colors.white,
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                var top = constraints.biggest.height;
+                bool isCollapsed =
+                    top <= kToolbarHeight + MediaQuery.of(context).padding.top;
+
+                return FutureBuilder<QuerySnapshot>(
+                  future: FirebaseFirestore.instance
+                      .collection('users')
+                      .where('email', isEqualTo: currentUser?.email ?? '')
+                      .limit(1)
+                      .get(),
+                  builder: (context, snapshot) {
+                    String name = "User";
+                    if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                      final data = snapshot.data!.docs.first.data()
+                          as Map<String, dynamic>;
+                      name = data['nick_name'] ?? "User";
+                    }
+
+                    return Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        AnimatedOpacity(
+                          duration: Duration(milliseconds: 200),
+                          opacity: isCollapsed ? 0.0 : 1.0,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.asset("assets/images/background_home.jpg",
+                                  fit: BoxFit.cover),
+                              Container(color: Colors.black.withOpacity(0.4)),
+                            ],
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 72, 16, 20),
+                            child: isCollapsed
+                                ? Center(
+                                    child: Text(
+                                      "iconhome",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                  )
+                                : SafeArea(
+                                    bottom: false, // ไม่ต้องใช้พื้นที่ล่าง
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            "Hey, $name!",
+                                            style: TextStyle(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                              shadows: [
+                                                Shadow(
+                                                    blurRadius: 2,
+                                                    color: Colors.black),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            "Let's start exploring",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.white70,
+                                              shadows: [
+                                                Shadow(
+                                                    blurRadius: 2,
+                                                    color: Colors.black),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          SliverToBoxAdapter(child: _buildSearchBar(context)),
+          SliverToBoxAdapter(child: _buildCategorySelector()),
+          SliverToBoxAdapter(child: _buildPromotionBanner()),
+          SliverToBoxAdapter(child: _buildSectionTitle("Featured Estates")),
+          SliverToBoxAdapter(child: _buildFeaturedEstates()),
+          SliverToBoxAdapter(child: _buildSectionTitle("Top Locations")),
+          SliverToBoxAdapter(child: _buildTopLocations()),
+          SliverToBoxAdapter(child: _buildSectionTitle("Estate Agent")),
+          SliverToBoxAdapter(child: _buildEstateAgents()),
+          SliverToBoxAdapter(
+              child: _buildSectionTitle("Explore Nearby Estates")),
+          SliverToBoxAdapter(child: _buildNearbyEstates()),
+        ],
       ),
     );
   }
@@ -244,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildCategoryItem("All"),
+          _buildCategoryItem("ทั้งหมด"),
           _buildCategoryItem("บ้านเดี่ยว"),
           _buildCategoryItem("ทาวน์เฮ้าส์"),
           _buildCategoryItem("คอนโด"),
@@ -258,18 +351,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return GestureDetector(
       onTap: () {
-        if (title == "All") {
-          setState(() {
-            selectedCategory = title;
-          });
-        } else {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => SubCategoryScreen(category: title),
-            ),
-          );
-        }
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SubCategoryScreen(category: title),
+          ),
+        );
       },
       child: Chip(
         label: Text(title),
@@ -378,18 +465,31 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildLocationItem(String image, String title) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 30,
-          backgroundImage: AssetImage("assets/images/$image"),
-        ),
-        SizedBox(height: 5), // เพิ่มระยะห่างระหว่างรูปกับข้อความ
-        Text(
-          title,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ),
-      ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => TopLocationListingScreen(
+              tagName: title,
+              image: image,
+            ),
+          ),
+        );
+      },
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundImage: AssetImage("assets/images/$image"),
+          ),
+          SizedBox(height: 5),
+          Text(
+            title,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 
@@ -409,22 +509,63 @@ class _HomeScreenState extends State<HomeScreen> {
           return Center(child: Text("ไม่มีข้อมูลเอเจนต์"));
         }
 
-        var agents = snapshot.data!.docs.take(3).toList();
+        var agents = snapshot.data!.docs;
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: agents.map((doc) {
+        return SizedBox(
+          height: 150,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            itemCount: agents.length,
+            itemBuilder: (context, index) {
+              var doc = agents[index];
               var data = doc.data() as Map<String, dynamic>;
               String name = data['nick_name'] ?? 'Agent';
-              String imagePath = data['image_path'] ??
-                  'https://i.ibb.co/7C5jfjq/placeholder.jpg';
+              String fullName = "${data['first_name']} ${data['last_name']}";
+              String imagePath = data['image_path'];
+              int userId = data['user_id'];
 
-              return Expanded(
-                child: _buildAgentAvatar(name, imagePath),
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AgentProfileScreen(agent: data),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 100,
+                  margin: EdgeInsets.symmetric(horizontal: 8),
+                  child: Column(
+                    children: [
+                      Hero(
+                        tag: 'agent_$userId',
+                        child: CircleAvatar(
+                          radius: 35,
+                          backgroundImage: NetworkImage(imagePath),
+                          onBackgroundImageError: (_, __) {},
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        name,
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        fullName,
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
               );
-            }).toList(),
+            },
           ),
         );
       },
@@ -540,18 +681,6 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
-
-  /// Bottom Navigation Bar
-  Widget _buildBottomNavigation() {
-    return BottomNavigationBar(
-      items: [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
-        BottomNavigationBarItem(icon: Icon(Icons.search), label: ""),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: ""),
-        BottomNavigationBarItem(icon: Icon(Icons.list), label: ""),
-      ],
-    );
-  }
 }
 
 class CustomDrawer extends StatelessWidget {
@@ -601,7 +730,7 @@ class CustomDrawer extends StatelessWidget {
                 leading: Icon(Icons.home),
                 title: Text(role == 'worker' ? 'My List' : 'My Real Estate'),
                 onTap: () {
-                  Navigator.pushNamed(context, '/my_properties');
+                  Navigator.pushNamed(context, '/my-listings');
                 },
               ),
               ListTile(

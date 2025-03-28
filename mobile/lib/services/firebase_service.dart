@@ -47,25 +47,170 @@ class FirebaseService {
     }
   }
 
-  Future<Set<int>> getFavoriteIds() async {
-    final userEmail = auth.FirebaseAuth.instance.currentUser?.email;
+  // Get user by ID
+  Future<User?> getUserById(int userId) async {
+    try {
+      final QuerySnapshot snapshot = await _firestore
+          .collection('users')
+          .where('user_id', isEqualTo: userId)
+          .limit(1)
+          .get();
 
-    final userSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('email', isEqualTo: userEmail)
+      if (snapshot.docs.isNotEmpty) {
+        final data = snapshot.docs.first.data() as Map<String, dynamic>;
+        return User.fromMap(data);
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching user: $e');
+      return null;
+    }
+  }
+
+  Future<User?> getUserByUid(String uid) async {
+    try {
+      final DocumentSnapshot snapshot =
+          await _firestore.collection('users').doc(uid).get();
+      if (snapshot.exists) {
+        return User.fromMap(snapshot.data() as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching user: $e');
+      return null;
+    }
+  }
+
+  Future<User?> getUserByEmail(String email) async {
+    try {
+      final QuerySnapshot snapshot = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+      if (snapshot.docs.isNotEmpty) {
+        return User.fromMap(snapshot.docs.first.data() as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching user: $e');
+      return null;
+    }
+  }
+
+  Future<List<User?>> getAllWorkers() async {
+    try {
+      final QuerySnapshot snapshot = await _firestore
+          .collection('users')
+          .where('role', isEqualTo: 'worker')
+          .get();
+      return snapshot.docs
+          .map((doc) => User.fromMap(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('Error fetching user: $e');
+      return [];
+    }
+  }
+
+  // Get real estate listings by user ID
+  Future<List<RealEstate>> getRealEstateByUserId(int userId) async {
+    try {
+      final QuerySnapshot snapshot = await _firestore
+          .collection('real_estate')
+          .where('user_id', isEqualTo: userId)
+          .where('active', isEqualTo: true)
+          .get();
+      List<RealEstate> realEstates = [];
+      for (var doc in snapshot.docs) {
+        realEstates.add(RealEstate.fromMap(doc.data() as Map<String, dynamic>));
+        print(realEstates);
+      }
+      for (var realEstate in realEstates) {
+        final List<String> images =
+            await getImagesForRealEstate(realEstate.realEstateId);
+        realEstate.images.addAll(images);
+      }
+
+      return realEstates;
+    } catch (e) {
+      print('Error fetching real estate by user ID: $e');
+      return [];
+    }
+  }
+
+  // Get real estate listings by user ID
+  Future<List<RealEstate>> getRealEstateByWorkerService(int userId) async {
+    try {
+      final QuerySnapshot snapshot = await _firestore
+          .collection('real_estate')
+          .where('worker_service', isEqualTo: userId)
+          .where('active', isEqualTo: true)
+          .get();
+      List<RealEstate> realEstates = [];
+      for (var doc in snapshot.docs) {
+        realEstates.add(RealEstate.fromMap(doc.data() as Map<String, dynamic>));
+        print(realEstates);
+      }
+      for (var realEstate in realEstates) {
+        final List<String> images =
+            await getImagesForRealEstate(realEstate.realEstateId);
+        realEstate.images.addAll(images);
+      }
+
+      return realEstates;
+    } catch (e) {
+      print('Error fetching real estate by user ID: $e');
+      return [];
+    }
+  }
+
+  // Get property images
+  Stream<QuerySnapshot> getPropertyImages(int realEstateId) {
+    return _firestore
+        .collection('image_real_estate')
+        .where('real_estate_id', isEqualTo: realEstateId)
         .limit(1)
-        .get();
+        .snapshots();
+  }
 
-    if (userSnapshot.docs.isEmpty) return {};
+  Future<List<String>> getImagesForRealEstate(int realEstateId) async {
+    try {
+      final QuerySnapshot snapshot = await _firestore
+          .collection('image_real_estate')
+          .where('real_estate_id', isEqualTo: realEstateId)
+          .orderBy('image_id', descending: false)
+          .get();
 
-    final userId = userSnapshot.docs.first['user_id'];
+      if (snapshot.docs.isEmpty) {
+        print('No images found for real estate ID: $realEstateId');
+        return [];
+      }
 
-    final favSnapshot = await FirebaseFirestore.instance
-        .collection('favorite_real_estate')
-        .where('user_id', isEqualTo: userId)
-        .get();
+      // Extract image paths from the documents
+      List<String> imagePaths = [];
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final String? imagePath = data['image_path'] as String?;
 
-    return favSnapshot.docs.map((doc) => doc['real_estate_id'] as int).toSet();
+        if (imagePath != null && imagePath.isNotEmpty) {
+          // Validate the URL format
+          if (imagePath.startsWith('http://') ||
+              imagePath.startsWith('https://')) {
+            imagePaths.add(imagePath);
+          } else {
+            print('Invalid image URL format: $imagePath');
+          }
+        }
+      }
+
+      print(
+          'Found ${imagePaths.length} images for real estate ID: $realEstateId');
+      return imagePaths;
+    } catch (e) {
+      print('Error fetching images for real estate ID $realEstateId: $e');
+      return [];
+    }
   }
 
   static Future<bool> toggleFavoriteInFirestore(int realEstateId) async {
@@ -101,32 +246,24 @@ class FirebaseService {
     }
   }
 
-  // Get user by ID
-  Future<User?> getUserById(int userId) async {
-    try {
-      final QuerySnapshot snapshot = await _firestore
-          .collection('users')
-          .where('user_id', isEqualTo: userId)
-          .limit(1)
-          .get();
+  Future<Set<int>> getFavoriteIds() async {
+    final userEmail = auth.FirebaseAuth.instance.currentUser?.email;
 
-      if (snapshot.docs.isNotEmpty) {
-        final data = snapshot.docs.first.data() as Map<String, dynamic>;
-        return User.fromMap(data);
-      }
-      return null;
-    } catch (e) {
-      print('Error fetching user: $e');
-      return null;
-    }
-  }
-
-  // Get property images
-  Stream<QuerySnapshot> getPropertyImages(int realEstateId) {
-    return _firestore
-        .collection('image_real_estate')
-        .where('real_estate_id', isEqualTo: realEstateId)
+    final userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: userEmail)
         .limit(1)
-        .snapshots();
+        .get();
+
+    if (userSnapshot.docs.isEmpty) return {};
+
+    final userId = userSnapshot.docs.first['user_id'];
+
+    final favSnapshot = await FirebaseFirestore.instance
+        .collection('favorite_real_estate')
+        .where('user_id', isEqualTo: userId)
+        .get();
+
+    return favSnapshot.docs.map((doc) => doc['real_estate_id'] as int).toSet();
   }
 }

@@ -8,6 +8,7 @@ environment:
   sdk: ^3.6.1
 
 dependencies:
+  cloud_firestore: ^5.6.5
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -16,7 +17,6 @@ dependencies:
   # Firebase
   firebase_core: ^3.12.1
   firebase_auth: ^5.5.1
-  cloud_firestore: ^5.6.5
   firebase_storage: ^12.4.4
   google_sign_in: ^6.3.0
 
@@ -40,6 +40,9 @@ dependencies:
   #camera
   camera: ^0.11.1
   path_provider: ^2.1.5
+  permission_handler: ^11.3.1
+  panorama: ^0.4.1
+
 
 
 
@@ -57,5 +60,6 @@ flutter:
     - assets/data/thai_provinces.json
     - assets/data/thai_amphures.json
     - assets/data/thai_tambons.json
+    - assets/images/background_home.jpg
     - .env
 

@@ -14,24 +14,24 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _birthDateController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  
+
   String _selectedCountryCode = '+44'; // Default to UK
   bool _obscurePassword = true;
   bool _isLoading = false;
   String _errorMessage = '';
-  
+
   @override
   void initState() {
     super.initState();
     _birthDateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
   }
-  
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -39,14 +39,14 @@ class _SignupScreenState extends State<SignupScreen> {
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
-    
+
     if (picked != null) {
       setState(() {
         _birthDateController.text = DateFormat('dd/MM/yyyy').format(picked);
       });
     }
   }
-  
+
   String _getReadableErrorMessage(String errorCode) {
     switch (errorCode) {
       case 'email-already-in-use':
@@ -59,13 +59,13 @@ class _SignupScreenState extends State<SignupScreen> {
         return 'An error occurred during registration. Please try again.';
     }
   }
-  
+
   Future<void> _register() async {
     // Clear any previous error messages
     setState(() {
       _errorMessage = '';
     });
-    
+
     if (_usernameController.text.isEmpty ||
         _emailController.text.isEmpty ||
         _birthDateController.text.isEmpty ||
@@ -76,37 +76,48 @@ class _SignupScreenState extends State<SignupScreen> {
       });
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       // Create user with email and password
-      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      final UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      
+
       // Get the next user_id
       final QuerySnapshot userSnapshot = await _firestore
           .collection('users')
           .orderBy('user_id', descending: true)
           .limit(1)
           .get();
-      
+      print(
+          "User ID: ${userSnapshot.docs.first.data() as Map<String, dynamic>}");
+      final QuerySnapshot usersSnapshot =
+          await _firestore.collection('users').get();
+      print("Number of users: ${usersSnapshot.docs.length}");
+      for (var doc in usersSnapshot.docs) {
+        print(doc.data());
+      }
+
       int nextUserId = 1;
       if (userSnapshot.docs.isNotEmpty) {
-        nextUserId = int.parse((userSnapshot.docs.first.data() as Map<String, dynamic>)['user_id']) + 1;
+        nextUserId = int.parse((userSnapshot.docs.first.data()
+                as Map<String, dynamic>)['user_id']) +
+            1;
       }
-      
+
       // Create user document in Firestore
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
         'active': true,
         'email': _emailController.text.trim(),
         'first_name': _usernameController.text.split(' ').first,
-        'last_name': _usernameController.text.split(' ').length > 1 
-            ? _usernameController.text.split(' ').last 
+        'last_name': _usernameController.text.split(' ').length > 1
+            ? _usernameController.text.split(' ').last
             : '',
         'image_path': '',
         'nick_name': '',
@@ -118,7 +129,7 @@ class _SignupScreenState extends State<SignupScreen> {
         'birth_date': _birthDateController.text,
         'created_at': FieldValue.serverTimestamp(),
       });
-      
+
       // Navigate to home screen
       Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
@@ -137,11 +148,12 @@ class _SignupScreenState extends State<SignupScreen> {
       });
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8E6F8), // Light pink/lavender background
+      backgroundColor:
+          const Color(0xFFF8E6F8), // Light pink/lavender background
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -164,9 +176,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Display error message if there is one
                 if (_errorMessage.isNotEmpty)
                   Padding(
@@ -180,7 +192,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                   ),
-                
+
                 // Username field (changed from Email)
                 const Text(
                   "Username",
@@ -200,15 +212,17 @@ class _SignupScreenState extends State<SignupScreen> {
                     decoration: const InputDecoration(
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 16),
-                      prefixIcon: Icon(Icons.person_outline, color: Colors.grey),
+                      prefixIcon:
+                          Icon(Icons.person_outline, color: Colors.grey),
                       hintText: "yourname",
-                      suffixIcon: Icon(Icons.check_circle_outline, color: Colors.grey),
+                      suffixIcon:
+                          Icon(Icons.check_circle_outline, color: Colors.grey),
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Email field
                 const Text(
                   "Email",
@@ -228,14 +242,15 @@ class _SignupScreenState extends State<SignupScreen> {
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       hintText: "youremail@example.com",
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Birth date field
                 const Text(
                   "Birth of date",
@@ -256,14 +271,16 @@ class _SignupScreenState extends State<SignupScreen> {
                     onTap: () => _selectDate(context),
                     decoration: const InputDecoration(
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                      suffixIcon: Icon(Icons.calendar_today, color: Colors.grey),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      suffixIcon:
+                          Icon(Icons.calendar_today, color: Colors.grey),
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Phone number field
                 const Text(
                   "Phone Number",
@@ -305,9 +322,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Password field
                 const Text(
                   "Set Password",
@@ -327,11 +344,14 @@ class _SignupScreenState extends State<SignupScreen> {
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 16),
                       hintText: "********",
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: Colors.grey,
                         ),
                         onPressed: () {
@@ -343,9 +363,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Register button
                 SizedBox(
                   width: double.infinity,
@@ -370,9 +390,9 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Login link
                 Center(
                   child: Row(
@@ -385,7 +405,8 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => Navigator.pushReplacementNamed(context, '/login'),
+                        onTap: () =>
+                            Navigator.pushReplacementNamed(context, '/login'),
                         child: const Text(
                           "Login",
                           style: TextStyle(
@@ -398,7 +419,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
               ],
             ),

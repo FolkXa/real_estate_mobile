@@ -13,7 +13,8 @@ import '../widgets/agent_info_card.dart';
 class PropertyDetailScreen extends StatefulWidget {
   final int realEstateId;
 
-  const PropertyDetailScreen({Key? key, required this.realEstateId}) : super(key: key);
+  const PropertyDetailScreen({Key? key, required this.realEstateId})
+      : super(key: key);
 
   @override
   _PropertyDetailScreenState createState() => _PropertyDetailScreenState();
@@ -33,14 +34,12 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
 
   void _loadData() {
     _realEstateFuture = _firebaseService.getRealEstateById(widget.realEstateId);
-    
+
     _realEstateFuture.then((realEstate) {
       if (realEstate != null) {
         _agentFuture = _firebaseService.getUserById(realEstate.userId);
         _nearbyPropertiesFuture = _firebaseService.getNearbyRealEstate(
-          realEstate.province, 
-          realEstate.realEstateId
-        );
+            realEstate.province, realEstate.realEstateId);
       }
     });
   }
@@ -59,17 +58,17 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
-          
+
           if (!snapshot.hasData || snapshot.data == null) {
             return const Center(child: Text('Property not found'));
           }
-          
+
           final property = snapshot.data!;
-          
+
           return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,7 +97,8 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                                 shape: BoxShape.circle,
                               ),
                               child: IconButton(
-                                icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                                icon: const Icon(Icons.arrow_back_ios_new,
+                                    size: 18),
                                 onPressed: () => Navigator.pop(context),
                               ),
                             ),
@@ -123,7 +123,8 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                                     shape: BoxShape.circle,
                                   ),
                                   child: IconButton(
-                                    icon: const Icon(Icons.favorite, color: Colors.white, size: 18),
+                                    icon: const Icon(Icons.favorite,
+                                        color: Colors.white, size: 18),
                                     onPressed: () {},
                                   ),
                                 ),
@@ -134,24 +135,24 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                       ),
                     ),
                     // Property Type Badge
-                    Positioned(
-                      bottom: 8,
-                      left: 20,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          property.typeRealestate,
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
+                    // Positioned(
+                    //   bottom: 65,
+                    //   left: 16,
+                    //   child: Container(
+                    //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    //     decoration: BoxDecoration(
+                    //       color: AppColors.primary,
+                    //       borderRadius: BorderRadius.circular(20),
+                    //     ),
+                    //     child: Text(
+                    //       property.typeRealestate,
+                    //       style: const TextStyle(color: Colors.white),
+                    //     ),
+                    //   ),
+                    // ),
                     // 360 View Button
                     Positioned(
-                      bottom: 8,
+                      bottom: 16,
                       right: 20,
                       child: Container(
                         padding: const EdgeInsets.all(8),
@@ -167,37 +168,41 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     ),
                   ],
                 ),
-                
+
                 // Property Title and Price
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'home${property.realEstateId}',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  child: Flexible(
+                    child: Text(
+                      property.name,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text(
-                        '\$ ${Formatters.formatCurrency(property.price)}',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
-                
+
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0, bottom: 8.0),
+                  child: Text(
+                    '\฿ ${Formatters.formatCurrency(property.price)}',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
                 // Address
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Row(
                     children: [
-                      const Icon(Icons.location_on, color: Colors.grey, size: 16),
+                      const Icon(Icons.location_on,
+                          color: Colors.grey, size: 16),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -215,7 +220,8 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Row(
                     children: [
-                      const Icon(Icons.visibility, color: Colors.grey, size: 16),
+                      const Icon(Icons.visibility,
+                          color: Colors.grey, size: 16),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -227,7 +233,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     ],
                   ),
                 ),
-                
+
                 // Contract Sale Button and 360 View
                 Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -267,7 +273,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     ],
                   ),
                 ),
-                
+
                 // Agent Info
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -281,7 +287,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     },
                   ),
                 ),
-                
+
                 // Rooms Section
                 const Padding(
                   padding: EdgeInsets.all(16.0),
@@ -293,7 +299,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     ),
                   ),
                 ),
-                
+
                 // Room Features
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -307,18 +313,57 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                       ),
                       PropertyFeature(
                         icon: Icons.bed,
-                        text: '2 Bedroom',  // This would come from property data
+                        text: '2 Bedroom', // This would come from property data
                         color: Colors.blue,
                       ),
                       PropertyFeature(
                         icon: Icons.bathtub,
-                        text: '1 Bathroom',  // This would come from property data
+                        text:
+                            '1 Bathroom', // This would come from property data
                         color: Colors.red,
                       ),
                     ],
                   ),
                 ),
-                
+
+                // Details
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'Details',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardBackground,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        // Full Address
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                property.details,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
                 // Location & Public Facilities
                 const Padding(
                   padding: EdgeInsets.all(16.0),
@@ -330,7 +375,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     ),
                   ),
                 ),
-                
+
                 // Location Details
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -366,7 +411,8 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                               style: TextStyle(color: Colors.grey),
                             ),
                             const Spacer(),
-                            Icon(Icons.keyboard_arrow_down, color: Colors.grey.shade400),
+                            Icon(Icons.keyboard_arrow_down,
+                                color: Colors.grey.shade400),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -379,7 +425,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     ),
                   ),
                 ),
-                
+
                 // Nearby Properties
                 const Padding(
                   padding: EdgeInsets.all(16.0),
@@ -391,7 +437,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     ),
                   ),
                 ),
-                
+
                 // Nearby Properties Grid
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -406,11 +452,12 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                           ),
                         );
                       }
-                      
+
                       final nearbyProperties = snapshot.data!;
-                      
+
                       return GridView.builder(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 16,
@@ -439,7 +486,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     },
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
               ],
             ),
