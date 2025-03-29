@@ -11,7 +11,8 @@ class SignupScreen extends StatefulWidget {
   _SignupScreenState createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends State<SignupScreen>
+    with SingleTickerProviderStateMixin {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -21,15 +22,46 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  String _selectedCountryCode = '+44'; // Default to UK
+  String _selectedCountryCode = '+44';
   bool _obscurePassword = true;
   bool _isLoading = false;
   String _errorMessage = '';
+  bool _emailValid = true;
+  bool _phoneValid = true;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
     _birthDateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnimation =
+        CurvedAnimation(parent: _animationController, curve: Curves.easeIn);
+    _animationController.forward();
+
+    _emailController.addListener(() {
+      setState(() {
+        _emailValid = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+            .hasMatch(_emailController.text.trim());
+      });
+    });
+
+    _phoneController.addListener(() {
+      setState(() {
+        _phoneValid =
+            RegExp(r'^\d{9,15}$').hasMatch(_phoneController.text.trim());
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -61,48 +93,37 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<void> _register() async {
-    // Clear any previous error messages
-    setState(() {
-      _errorMessage = '';
-    });
+    setState(() => _errorMessage = '');
 
     if (_usernameController.text.isEmpty ||
         _emailController.text.isEmpty ||
         _birthDateController.text.isEmpty ||
         _phoneController.text.isEmpty ||
         _passwordController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Please fill in all fields';
-      });
+      setState(() => _errorMessage = 'Please fill in all fields');
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    if (!_emailValid || !_phoneValid) {
+      setState(
+          () => _errorMessage = 'Please enter valid email and phone number');
+      return;
+    }
+
+    setState(() => _isLoading = true);
 
     try {
-      // Create user with email and password
       final UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // Get the next user_id
       final QuerySnapshot userSnapshot = await _firestore
           .collection('users')
           .orderBy('user_id', descending: true)
           .limit(1)
           .get();
-      print(
-          "User ID: ${userSnapshot.docs.first.data() as Map<String, dynamic>}");
-      final QuerySnapshot usersSnapshot =
-          await _firestore.collection('users').get();
-      print("Number of users: ${usersSnapshot.docs.length}");
-      for (var doc in usersSnapshot.docs) {
-        print(doc.data());
-      }
 
       int nextUserId = 1;
       if (userSnapshot.docs.isNotEmpty) {
@@ -111,7 +132,6 @@ class _SignupScreenState extends State<SignupScreen> {
             1;
       }
 
-      // Create user document in Firestore
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
         'active': true,
         'email': _emailController.text.trim(),
@@ -121,292 +141,248 @@ class _SignupScreenState extends State<SignupScreen> {
             : '',
         'image_path': '',
         'nick_name': '',
-        'password': 'firebase_managed', // Don't store actual password
+        'password': 'firebase_managed',
         'phone_number': _selectedCountryCode + _phoneController.text.trim(),
-        'role': 'user', // Default role
+        'role': 'user',
         'user_id': nextUserId,
         'username': _usernameController.text.replaceAll(' ', '_').toLowerCase(),
         'birth_date': _birthDateController.text,
         'created_at': FieldValue.serverTimestamp(),
       });
 
-      // Navigate to home screen
       Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
-      setState(() {
-        _errorMessage = _getReadableErrorMessage(e.code);
-      });
-      print("Error: ${e.code} - ${e.message}");
+      setState(() => _errorMessage = _getReadableErrorMessage(e.code));
     } catch (e) {
-      setState(() {
-        _errorMessage = 'An unexpected error occurred. Please try again.';
-      });
-      print("Error: $e");
+      setState(() =>
+          _errorMessage = 'An unexpected error occurred. Please try again.');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
+  }
+
+  Widget _buildLabeledField(String label, Widget field) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
+          ),
+        ),
+        const SizedBox(height: 8),
+        field,
+      ],
+    );
+  }
+
+  Widget _styledContainer({required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: child,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF8E6F8), // Light pink/lavender background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon:
+              Icon(Icons.arrow_back, color: Theme.of(context).iconTheme.color),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   "Sign up",
                   style: TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.headlineLarge?.color,
                   ),
                 ),
-
                 const SizedBox(height: 32),
-
-                // Display error message if there is one
                 if (_errorMessage.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16.0),
                     child: Text(
                       _errorMessage,
                       style: const TextStyle(
-                        color: Colors.red,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
+                          color: Colors.red,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500),
                     ),
                   ),
-
-                // Username field (changed from Email)
-                const Text(
+                _buildLabeledField(
                   "Username",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: TextField(
-                    controller: _usernameController,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 16),
-                      prefixIcon:
-                          Icon(Icons.person_outline, color: Colors.grey),
-                      hintText: "yourname",
-                      suffixIcon:
-                          Icon(Icons.check_circle_outline, color: Colors.grey),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Email field
-                const Text(
-                  "Email",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: TextField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                      hintText: "youremail@example.com",
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Birth date field
-                const Text(
-                  "Birth of date",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: TextField(
-                    controller: _birthDateController,
-                    readOnly: true,
-                    onTap: () => _selectDate(context),
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                      suffixIcon:
-                          Icon(Icons.calendar_today, color: Colors.grey),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Phone number field
-                const Text(
-                  "Phone Number",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      CountryCodePicker(
-                        onChanged: (CountryCode countryCode) {
-                          setState(() {
-                            _selectedCountryCode = countryCode.dialCode!;
-                          });
-                        },
-                        initialSelection: 'GB',
-                        favorite: const ['US', 'GB', 'TH'],
-                        showCountryOnly: false,
-                        showOnlyCountryWhenClosed: false,
-                        alignLeft: false,
+                  _styledContainer(
+                    child: TextField(
+                      controller: _usernameController,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 16),
+                        prefixIcon: Icon(Icons.person_outline,
+                            color: Theme.of(context).iconTheme.color),
+                        hintText: "yourname",
                       ),
-                      Expanded(
-                        child: TextField(
-                          controller: _phoneController,
-                          keyboardType: TextInputType.phone,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "(123) 456-7890",
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildLabeledField(
+                  "Email",
+                  _styledContainer(
+                    child: TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
+                        hintText: "youremail@example.com",
+                        suffixIcon: Icon(
+                          _emailValid ? Icons.check_circle : Icons.error,
+                          color: _emailValid ? Colors.green : Colors.red,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildLabeledField(
+                  "Birth of date",
+                  _styledContainer(
+                    child: TextField(
+                      controller: _birthDateController,
+                      readOnly: true,
+                      onTap: () => _selectDate(context),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        suffixIcon: Icon(Icons.calendar_today),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildLabeledField(
+                  "Phone Number",
+                  _styledContainer(
+                    child: Row(
+                      children: [
+                        CountryCodePicker(
+                          onChanged: (CountryCode countryCode) {
+                            setState(() {
+                              _selectedCountryCode = countryCode.dialCode!;
+                            });
+                          },
+                          initialSelection: 'GB',
+                          favorite: const ['US', 'GB', 'TH'],
+                          showCountryOnly: false,
+                          showOnlyCountryWhenClosed: false,
+                          alignLeft: false,
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "(123) 456-7890",
+                              suffixIcon: Icon(
+                                _phoneValid ? Icons.check_circle : Icons.error,
+                                color: _phoneValid ? Colors.green : Colors.red,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
-                // Password field
-                const Text(
+                _buildLabeledField(
                   "Set Password",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: TextField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 16),
-                      hintText: "********",
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.grey,
+                  _styledContainer(
+                    child: TextField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
+                        hintText: "********",
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: Theme.of(context).iconTheme.color,
+                          ),
+                          onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword),
                         ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
                       ),
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 32),
-
-                // Register button
                 SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _register,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
+                        ? CircularProgressIndicator(
+                            color: Theme.of(context).colorScheme.onPrimary)
+                        : Text(
                             "Register",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onPrimary,
                             ),
                           ),
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
-                // Login link
                 Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         "Already have an account? ",
                         style: TextStyle(
                           fontSize: 16,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                         ),
                       ),
                       GestureDetector(
-                        onTap: () =>
-                            Navigator.pushReplacementNamed(context, '/login'),
+                        onTap: () => Navigator.pop(context),
                         child: const Text(
                           "Login",
                           style: TextStyle(
@@ -419,7 +395,6 @@ class _SignupScreenState extends State<SignupScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 32),
               ],
             ),

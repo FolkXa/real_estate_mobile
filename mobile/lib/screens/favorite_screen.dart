@@ -2,9 +2,97 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:real_estate_project/screens/property_detail.dart';
+import 'package:real_estate_project/widgets/RealEstateCard.dart';
 
-class FavoriteScreen extends StatelessWidget {
+class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
+
+  @override
+  State<FavoriteScreen> createState() => _FavoriteScreenState();
+}
+
+class _FavoriteScreenState extends State<FavoriteScreen> {
+  Set<int> favoriteIds = {};
+
+  Future<int?> getCurrentUserId() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isEmpty) return null;
+
+      final data = snapshot.docs.first.data();
+      print("👉 user document: $data");
+
+      final rawId = data['user_id'];
+      return int.tryParse(rawId.toString());
+    } catch (e) {
+      debugPrint("❌ Error fetching user: $e");
+      return null;
+    }
+  }
+
+  Future<bool> toggleFavorite(int realEstateId) async {
+    final userId = await getCurrentUserId();
+    if (userId == null) return false;
+
+    final favRef =
+        FirebaseFirestore.instance.collection('favorite_real_estate');
+    final existing = await favRef
+        .where('user_id', isEqualTo: userId)
+        .where('real_estate_id', isEqualTo: realEstateId)
+        .get();
+
+    if (existing.docs.isNotEmpty) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("ลบรายการโปรด"),
+          content:
+              Text("คุณต้องการลบอสังหาริมทรัพย์นี้ออกจากรายการโปรดหรือไม่?"),
+          actions: [
+            TextButton(
+              child: Text("ยกเลิก"),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            ElevatedButton(
+              child: Text("ยืนยัน"),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm == true) {
+        await favRef.doc(existing.docs.first.id).delete();
+        setState(() {
+          favoriteIds.remove(realEstateId);
+        });
+        _showSnack("ลบออกจากรายการโปรดแล้ว", Colors.red);
+        return false;
+      } else {
+        return true; // กดยกเลิกไม่ลบ
+      }
+    } else {
+      await favRef.add({
+        "user_id": userId,
+        "real_estate_id": realEstateId,
+        "favorite_id": DateTime.now().millisecondsSinceEpoch,
+      });
+      setState(() {
+        favoriteIds.add(realEstateId);
+      });
+      _showSnack("เพิ่มเข้ารายการโปรดแล้ว", Colors.green);
+      return true;
+    }
+  }
 
   Future<String> _getTitleImagePath(int realEstateId) async {
     final imageSnapshot = await FirebaseFirestore.instance
@@ -15,30 +103,35 @@ class FavoriteScreen extends StatelessWidget {
         .get();
 
     if (imageSnapshot.docs.isNotEmpty) {
-      return "https://your-cdn-url.com/${imageSnapshot.docs.first['image_path']}";
+      final path = imageSnapshot.docs.first['image_path'];
+
+      // ถ้ามี path ที่ใช้ได้ (เช่น https://... จาก Cloudflare R2)
+      if (path.startsWith("http")) {
+        return path;
+      }
+
+      // หรือประกอบเป็น URL จาก CDN จริงของคุณ
+      return "https://your-real-cdn.com/$path";
     } else {
-      return "https://via.placeholder.com/150"; // fallback image
+      return "https://via.placeholder.com/150";
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = FirebaseAuth.instance.currentUser;
-
-    if (currentUser == null) {
-      return Scaffold(
-        appBar: AppBar(title: Text("รายการโปรด")),
-        body: Center(child: Text("กรุณาเข้าสู่ระบบ")),
-      );
-    }
-
     return Scaffold(
-      appBar: AppBar(title: Text("รายการโปรด")),
+      appBar: AppBar(
+        title: Text("รายการโปรด"),
+      ),
       body: FutureBuilder<int?>(
         future: getCurrentUserId(),
         builder: (context, userIdSnapshot) {
-          if (!userIdSnapshot.hasData) {
+          if (userIdSnapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
+          }
+
+          if (!userIdSnapshot.hasData || userIdSnapshot.data == null) {
+            return Center(child: Text("ไม่พบข้อมูลผู้ใช้"));
           }
 
           final userId = userIdSnapshot.data!;
@@ -51,43 +144,41 @@ class FavoriteScreen extends StatelessWidget {
               if (snapshot.connectionState == ConnectionState.waiting)
                 return Center(child: CircularProgressIndicator());
 
-              final favorites = snapshot.data?.docs ?? [];
+              final favoriteDocs = snapshot.data?.docs ?? [];
+              final realEstateIds = favoriteDocs
+                  .map((doc) => doc['real_estate_id'] as int)
+                  .toList();
 
-              if (favorites.isEmpty) {
+              favoriteIds.addAll(realEstateIds); // sync ครั้งแรก
+
+              if (realEstateIds.isEmpty) {
                 return Center(child: Text("ยังไม่มีรายการโปรด"));
               }
 
               return ListView.builder(
-                itemCount: favorites.length,
+                itemCount: realEstateIds.length,
                 itemBuilder: (context, index) {
-                  final favorite = favorites[index];
-                  final realEstateId = favorite['real_estate_id'];
-
+                  final id = realEstateIds[index];
                   return FutureBuilder<DocumentSnapshot>(
                     future: FirebaseFirestore.instance
                         .collection('real_estate')
-                        .doc(realEstateId.toString())
+                        .doc(id.toString())
                         .get(),
-                    builder: (context, realEstateSnapshot) {
-                      if (!realEstateSnapshot.hasData)
-                        return ListTile(title: Text("กำลังโหลด..."));
-
-                      final data = realEstateSnapshot.data!.data()
-                          as Map<String, dynamic>;
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) return SizedBox();
+                      final data =
+                          snapshot.data!.data() as Map<String, dynamic>;
 
                       return FutureBuilder<String>(
-                        future: _getTitleImagePath(realEstateId),
-                        builder: (context, imageSnapshot) {
-                          final imageUrl = imageSnapshot.data ??
-                              "https://via.placeholder.com/150";
-
+                        future: _getTitleImagePath(id),
+                        builder: (context, imgSnap) {
                           return GestureDetector(
                             onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => PropertyDetailScreen(
-                                      realEstateId: realEstateId),
+                                  builder: (_) =>
+                                      PropertyDetailScreen(realEstateId: id),
                                 ),
                               );
                             },
@@ -103,7 +194,7 @@ class FavoriteScreen extends StatelessWidget {
                                       borderRadius: BorderRadius.horizontal(
                                           left: Radius.circular(10)),
                                       image: DecorationImage(
-                                        image: NetworkImage(imageUrl),
+                                        image: NetworkImage(imgSnap.data ?? ""),
                                         fit: BoxFit.cover,
                                       ),
                                     ),
@@ -116,7 +207,7 @@ class FavoriteScreen extends StatelessWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            data['name'],
+                                            data['name'] ?? '',
                                             style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold),
@@ -132,7 +223,25 @@ class FavoriteScreen extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  Icon(Icons.favorite, color: Colors.red),
+                                  IconButton(
+                                    icon: Icon(
+                                      favoriteIds.contains(id)
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: Colors.red,
+                                    ),
+                                    onPressed: () async {
+                                      final newStatus =
+                                          await toggleFavorite(id);
+                                      setState(() {
+                                        if (newStatus) {
+                                          favoriteIds.add(id);
+                                        } else {
+                                          favoriteIds.remove(id);
+                                        }
+                                      });
+                                    },
+                                  ),
                                 ],
                               ),
                             ),
@@ -150,20 +259,13 @@ class FavoriteScreen extends StatelessWidget {
     );
   }
 
-  Future<int?> getCurrentUserId() async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return null;
-
-    final snapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('email', isEqualTo: currentUser.email)
-        .limit(1)
-        .get();
-
-    if (snapshot.docs.isNotEmpty) {
-      return snapshot.docs.first['user_id'] as int;
-    } else {
-      return null;
-    }
+  void _showSnack(String message, Color backgroundColor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: TextStyle(fontSize: 14)),
+        duration: Duration(seconds: 2),
+        backgroundColor: backgroundColor,
+      ),
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:real_estate_project/screens/Reset_password_screen.dart';
 import '../theme_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -43,9 +44,14 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             ListTile(
-              leading: Icon(Icons.lock_reset),
-              title: Text("Reset Password"),
-              onTap: () => _sendResetPasswordEmail(context),
+              leading: Icon(Icons.lock),
+              title: Text("เปลี่ยนรหัสผ่าน"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ResetPasswordScreen()),
+                );
+              },
             ),
           ],
         ),

@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:real_estate_project/screens/RealEstateCard.dart';
+import 'package:real_estate_project/widgets/RealEstateCard.dart';
 import 'package:real_estate_project/screens/property_detail.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:intl/intl.dart';
@@ -116,15 +116,12 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
                     }
 
                     return RealEstateCard(
-                      realEstateId: realEstateId,
-                      imagePath: imagePath,
-                      price: price,
-                      name: name,
-                      location: location,
-                      sellType: sellType,
-                      isInitiallyFavorite: favoriteIds.contains(realEstateId),
-                      onToggleFavorite: toggleFavoriteInFirestore,
-                    );
+                        realEstateId: realEstateId,
+                        imagePath: imagePath,
+                        price: price,
+                        name: name,
+                        location: location,
+                        sellType: sellType);
                   },
                 ),
               );

@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:real_estate_project/screens/RealEstateCard.dart';
+import 'package:real_estate_project/widgets/RealEstateCard.dart';
 import 'package:real_estate_project/services/firebase_service.dart';
 
 class TopLocationListingScreen extends StatefulWidget {
@@ -155,16 +155,12 @@ class _TopLocationListingScreenState extends State<TopLocationListingScreen> {
                             final imagePath = imageSnapshot.data ??
                                 "assets/images/placeholder.jpg";
                             return RealEstateCard(
-                              realEstateId: item['real_estate_id'],
-                              imagePath: imagePath,
-                              price: item['price'].toString(),
-                              name: item['name'] ?? "ไม่ระบุชื่อ",
-                              location: item['province'] ?? "",
-                              sellType: item['type_sell'] ?? "ขายขาด",
-                              isInitiallyFavorite: false,
-                              onToggleFavorite:
-                                  FirebaseService.toggleFavoriteInFirestore,
-                            );
+                                realEstateId: item['real_estate_id'],
+                                imagePath: imagePath,
+                                price: item['price'].toString(),
+                                name: item['name'] ?? "ไม่ระบุชื่อ",
+                                location: item['province'] ?? "",
+                                sellType: item['type_sell'] ?? "ขายขาด");
                           },
                         );
                       },

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
+import 'package:real_estate_project/theme_provider.dart';
 // import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../../utils/constants.dart';
 
@@ -81,9 +83,33 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF8E6F8), // Light pink/lavender background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar:
+          AppBar(elevation: 0, backgroundColor: Colors.transparent, actions: [
+        Row(
+          children: [
+            Tooltip(
+              message: themeProvider.isDarkMode
+                  ? 'Switch to Light Mode'
+                  : 'Switch to Dark Mode',
+              child: IconButton(
+                icon: Icon(
+                  themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                ),
+                onPressed: () =>
+                    themeProvider.toggleTheme(!themeProvider.isDarkMode),
+              ),
+            ),
+            Switch(
+              value: themeProvider.isDarkMode,
+              onChanged: (value) => themeProvider.toggleTheme(value),
+            ),
+          ],
+        ),
+      ]),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -111,107 +137,54 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
 
                 // Company name
-                const Text(
-                  "Real Estate App",
+                Text(
+                  "Icon Home",
                   style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.headlineSmall?.color,
                   ),
                 ),
 
                 const SizedBox(height: 10),
 
                 // Email field
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Email",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: TextField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 16),
-                          hintText: "Email",
-                        ),
-                      ),
-                    ),
-                  ],
+                _buildInputField(
+                  controller: _emailController,
+                  label: "Email",
+                  hint: "Enter your email",
+                  icon: Icons.email,
                 ),
-
                 const SizedBox(height: 20),
 
                 // Password field
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Password",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
+                _buildInputField(
+                  controller: _passwordController,
+                  label: "Password",
+                  hint: "Enter your password",
+                  icon: Icons.lock,
+                  obscure: _obscurePassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: TextField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 16),
-                          hintText: "Password",
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: Colors.grey,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
                 ),
-
-                const SizedBox(height: 16),
+                const SizedBox(height: 2),
 
                 // Forgot password
                 Align(
                   alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: _navigateToForgotPassword,
-                    child: const Text(
-                      "Forgot Password ?",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                  child: TextButton(
+                    onPressed: _navigateToForgotPassword,
+                    child: const Text("Forgot Password?"),
                   ),
                 ),
 
@@ -224,7 +197,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: _signInWithEmail,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4B0082), // Deep purple
+                      backgroundColor: const Color.fromARGB(
+                          255, 158, 99, 200), // Deep purple
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -243,11 +217,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 24),
 
                 // Or divider
-                const Text(
+                Text(
                   "Or",
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey,
+                    color: Theme.of(context).textTheme.bodySmall?.color,
                   ),
                 ),
 
@@ -282,11 +256,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Don't have an account? ",
+                    Text(
+                      "Don't have an account?",
                       style: TextStyle(
-                        fontSize: 16,
-                      ),
+                          color: Theme.of(context).textTheme.bodyMedium?.color),
                     ),
                     GestureDetector(
                       onTap: _navigateToSignUp,
@@ -312,6 +285,29 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
+Widget _buildInputField({
+  required TextEditingController controller,
+  required String label,
+  required String hint,
+  required IconData icon,
+  bool obscure = false,
+  Widget? suffixIcon,
+}) {
+  return TextField(
+    controller: controller,
+    obscureText: obscure,
+    decoration: InputDecoration(
+      labelText: label,
+      hintText: hint,
+      prefixIcon: Icon(icon),
+      suffixIcon: suffixIcon,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+  );
+}
+
 class SocialLoginButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String text;
@@ -326,16 +322,18 @@ class SocialLoginButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).cardColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          elevation: 2,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -344,10 +342,10 @@ class SocialLoginButton extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: Colors.black,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
           ],

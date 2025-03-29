@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:real_estate_project/screens/RealEstateCard.dart';
+import 'package:real_estate_project/widgets/RealEstateCard.dart';
 import 'package:real_estate_project/screens/SearchPage.dart';
 import 'package:real_estate_project/screens/agent_profile_screen.dart';
 import 'package:real_estate_project/screens/profile_screen.dart';
@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String selectedCategory = "All";
   Set<int> favoriteIds = {};
   final ScrollController _scrollController = ScrollController();
+  ValueNotifier<bool> isCollapsedNotifier = ValueNotifier(false);
 
   final currentUser = FirebaseAuth.instance.currentUser;
 
@@ -29,6 +30,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     fetchFavorites();
+    _scrollController.addListener(() {
+      final isCollapsed = _scrollController.offset > 100;
+      if (isCollapsed != isCollapsedNotifier.value) {
+        isCollapsedNotifier.value = isCollapsed;
+      }
+    });
   }
 
   void fetchFavorites() async {
@@ -102,7 +109,24 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverAppBar(
             expandedHeight: 220,
             pinned: true,
-            backgroundColor: Colors.white,
+            backgroundColor: Theme.of(context).appBarTheme.backgroundColor ??
+                Theme.of(context).colorScheme.surface,
+            leading: ValueListenableBuilder<bool>(
+              valueListenable: isCollapsedNotifier,
+              builder: (context, isCollapsed, _) {
+                return IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                  ),
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                );
+              },
+            ),
             flexibleSpace: LayoutBuilder(
               builder: (context, constraints) {
                 var top = constraints.biggest.height;
@@ -147,14 +171,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: Text(
                                       "iconhome",
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.black,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 20,
                                       ),
                                     ),
                                   )
                                 : SafeArea(
-                                    bottom: false, // ไม่ต้องใช้พื้นที่ล่าง
+                                    bottom: false,
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       crossAxisAlignment:
@@ -180,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             "Let's start exploring",
                                             style: TextStyle(
                                               fontSize: 16,
-                                              color: Colors.white70,
+                                              color: Colors.white,
                                               shadows: [
                                                 Shadow(
                                                     blurRadius: 2,
@@ -206,12 +233,13 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(child: _buildPromotionBanner()),
           SliverToBoxAdapter(child: _buildSectionTitle("Featured Estates")),
           SliverToBoxAdapter(child: _buildFeaturedEstates()),
-          SliverToBoxAdapter(child: _buildSectionTitle("Top Locations")),
+          SliverToBoxAdapter(child: _buildSectionTitle("สถานที่ยอดฮิต")),
           SliverToBoxAdapter(child: _buildTopLocations()),
-          SliverToBoxAdapter(child: _buildSectionTitle("Estate Agent")),
+          SliverToBoxAdapter(child: _buildSectionTitle("พนักงานขาย")),
           SliverToBoxAdapter(child: _buildEstateAgents()),
           SliverToBoxAdapter(
-              child: _buildSectionTitle("Explore Nearby Estates")),
+            child: _buildSectionTitle("อสังหาที่แนะนำ", topPadding: 2.0),
+          ),
           SliverToBoxAdapter(child: _buildNearbyEstates()),
         ],
       ),
@@ -385,31 +413,43 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+          // ทำให้รูปมืดลง
+          Container(
+            height: 180,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15.0),
+              color: Colors.black.withOpacity(0.4),
+            ),
+          ),
+          // ข้อความมีขอบชัดเจน
           Positioned(
             left: 16,
             bottom: 16,
-            child: Text(
-              "Hot Sale!\nAll discount up to 60%",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+            child: Stack(
+              children: [
+                Text(
+                  "Hot Sale!\nAll discount up to 60%",
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
   /// Section Title
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, {double topPadding = 24.0}) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-          16.0, 16.0, 16.0, 16.0), // ลดระยะห่างด้านบน/ล่างเป็น 0
+      padding: EdgeInsets.fromLTRB(16.0, topPadding, 16.0, 16.0),
       child: Text(
         title,
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -620,6 +660,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return GridView.builder(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.only(top: 4),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               childAspectRatio: 0.75,
@@ -670,9 +711,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       name: name,
                       location: location,
                       sellType: sellType,
-                      isInitiallyFavorite: favoriteIds.contains(realEstateId),
-                      onToggleFavorite:
-                          FirebaseService.toggleFavoriteInFirestore,
                     );
                   },
                 ),
