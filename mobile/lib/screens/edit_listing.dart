@@ -35,12 +35,12 @@ class _EditListingScreenState extends State<EditListingScreen> {
   final TextEditingController _tambonController = TextEditingController();
   final TextEditingController _detailsController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
-  
+
   // Area controllers
   final TextEditingController _raiController = TextEditingController();
   final TextEditingController _nganController = TextEditingController();
   final TextEditingController _waController = TextEditingController();
-  
+
   final TextEditingController _bedroomController = TextEditingController();
   final TextEditingController _bathroomController = TextEditingController();
   final TextEditingController _searchUserController = TextEditingController();
@@ -106,10 +106,12 @@ class _EditListingScreenState extends State<EditListingScreen> {
   // Calculate total area in square wa
   double _calculateTotalAreaInSquareWa() {
     try {
-      double rai = double.tryParse(_raiController.text.replaceAll(',', '')) ?? 0;
-      double ngan = double.tryParse(_nganController.text.replaceAll(',', '')) ?? 0;
+      double rai =
+          double.tryParse(_raiController.text.replaceAll(',', '')) ?? 0;
+      double ngan =
+          double.tryParse(_nganController.text.replaceAll(',', '')) ?? 0;
       double wa = double.tryParse(_waController.text.replaceAll(',', '')) ?? 0;
-      
+
       // Convert all to square wa
       return (rai * 400) + (ngan * 100) + wa;
     } catch (e) {
@@ -131,7 +133,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
       // Load Thailand division data
       await _loadThailandDivision();
-      
+
       // Load property data
       final property =
           await _firebaseService.getRealEstateById(widget.realEstateId);
@@ -179,7 +181,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       // Convert area to Thai units
       Area area = property.area;
       _convertAreaToThaiUnits(area);
-      
+
       // Populate form fields
       _nameController.text = property.name;
       _addressController.text = property.address;
@@ -194,18 +196,20 @@ class _EditListingScreenState extends State<EditListingScreen> {
       _longitudeController.text = property.longitude.toString();
 
       // Find and set the selected province, amphur, and tambon
-      _setInitialLocationData(property.province, property.amphur, property.tambon);
+      _setInitialLocationData(
+          property.province, property.amphur, property.tambon);
 
       setState(() {
         _selectedType = property.typeRealestate;
-        
+
         // Validate that the selected type exists in the dropdown options
         if (!_estateTypes.contains(_selectedType)) {
           // If not found, set to the first option
           _selectedType = _estateTypes[0];
-          print('Warning: Property type "${property.typeRealestate}" not found in options, defaulting to ${_estateTypes[0]}');
+          print(
+              'Warning: Property type "${property.typeRealestate}" not found in options, defaulting to ${_estateTypes[0]}');
         }
-        
+
         _selectedSellType = property.typeSell;
         _isPremium = property.premiumPromote;
         _workerService = int.tryParse(property.workerService.toString()) ?? 1;
@@ -230,23 +234,27 @@ class _EditListingScreenState extends State<EditListingScreen> {
         (p) => p['name_th'] == province,
         orElse: () => {},
       );
-      
+
       if (provinceMatch.isNotEmpty) {
         _selectedProvince = provinceMatch;
-        
+
         // Find amphur
-        final amphurMatches = _thailandDivision!.amphures.where(
-          (a) => a['province_id'] == provinceMatch['id'] && a['name_th'] == amphur
-        ).toList();
-        
+        final amphurMatches = _thailandDivision!.amphures
+            .where((a) =>
+                a['province_id'] == provinceMatch['id'] &&
+                a['name_th'] == amphur)
+            .toList();
+
         if (amphurMatches.isNotEmpty) {
           _selectedAmphur = amphurMatches.first;
-          
+
           // Find tambon
-          final tambonMatches = _thailandDivision!.tambons.where(
-            (t) => t['amphure_id'] == _selectedAmphur!['id'] && t['name_th'] == tambon
-          ).toList();
-          
+          final tambonMatches = _thailandDivision!.tambons
+              .where((t) =>
+                  t['amphure_id'] == _selectedAmphur!['id'] &&
+                  t['name_th'] == tambon)
+              .toList();
+
           if (tambonMatches.isNotEmpty) {
             _selectedTambon = tambonMatches.first;
           }
@@ -326,11 +334,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
   // Search functions for location
   void _searchProvinces(String query) {
     if (_thailandDivision == null) return;
-    
+
     setState(() {
       _isSearchingProvince = true;
     });
-    
+
     try {
       final results = _thailandDivision!.searchProvince(query);
       setState(() {
@@ -347,16 +355,17 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
   void _searchAmphures(String query) {
     if (_thailandDivision == null || _selectedProvince == null) return;
-    
+
     setState(() {
       _isSearchingAmphur = true;
     });
-    
+
     try {
-      final results = _thailandDivision!.searchAmphure(query).where(
-        (amphur) => amphur['province_id'] == _selectedProvince!['id']
-      ).toList();
-      
+      final results = _thailandDivision!
+          .searchAmphure(query)
+          .where((amphur) => amphur['province_id'] == _selectedProvince!['id'])
+          .toList();
+
       setState(() {
         _amphurResults = results;
         _isSearchingAmphur = false;
@@ -371,16 +380,17 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
   void _searchTambons(String query) {
     if (_thailandDivision == null || _selectedAmphur == null) return;
-    
+
     setState(() {
       _isSearchingTambon = true;
     });
-    
+
     try {
-      final results = _thailandDivision!.searchTambon(query).where(
-        (tambon) => tambon['amphure_id'] == _selectedAmphur!['id']
-      ).toList();
-      
+      final results = _thailandDivision!
+          .searchTambon(query)
+          .where((tambon) => tambon['amphure_id'] == _selectedAmphur!['id'])
+          .toList();
+
       setState(() {
         _tambonResults = results;
         _isSearchingTambon = false;
@@ -398,7 +408,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       _selectedProvince = province;
       _provinceController.text = province['name_th'];
       _provinceResults = [];
-      
+
       // Reset amphur and tambon when province changes
       _selectedAmphur = null;
       _selectedTambon = null;
@@ -412,7 +422,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       _selectedAmphur = amphur;
       _amphurController.text = amphur['name_th'];
       _amphurResults = [];
-      
+
       // Reset tambon when amphur changes
       _selectedTambon = null;
       _tambonController.text = '';
@@ -621,7 +631,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       });
       return false;
     }
-    
+
     // Validate ngan (0-3)
     int ngan = int.tryParse(_nganController.text) ?? 0;
     if (ngan < 0 || ngan >= 4) {
@@ -630,7 +640,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       });
       return false;
     }
-    
+
     // Validate wa (0-99)
     int wa = int.tryParse(_waController.text) ?? 0;
     if (wa < 0 || wa >= 100) {
@@ -639,7 +649,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       });
       return false;
     }
-    
+
     return true;
   }
 
@@ -650,21 +660,21 @@ class _EditListingScreenState extends State<EditListingScreen> {
       });
       return false;
     }
-    
+
     if (_selectedAmphur == null) {
       setState(() {
         _errorMessage = 'กรุณาเลือกอำเภอ/เขต';
       });
       return false;
     }
-    
+
     if (_selectedTambon == null) {
       setState(() {
         _errorMessage = 'กรุณาเลือกตำบล/แขวง';
       });
       return false;
     }
-    
+
     return true;
   }
 
@@ -683,9 +693,9 @@ class _EditListingScreenState extends State<EditListingScreen> {
         _tambonController.text.isEmpty ||
         _detailsController.text.isEmpty ||
         _priceController.text.isEmpty ||
-        (_raiController.text.isEmpty && 
-         _nganController.text.isEmpty && 
-         _waController.text.isEmpty) ||
+        (_raiController.text.isEmpty &&
+            _nganController.text.isEmpty &&
+            _waController.text.isEmpty) ||
         _bedroomController.text.isEmpty ||
         _bathroomController.text.isEmpty ||
         _latitudeController.text.isEmpty ||
@@ -720,7 +730,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       area = _calculateTotalAreaInSquareWa();
       bedroom = int.parse(_bedroomController.text);
       bathroom = int.parse(_bathroomController.text);
-      
+
       if (area <= 0) {
         setState(() {
           _errorMessage = 'กรุณากรอกพื้นที่ให้ถูกต้อง';
@@ -729,7 +739,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'กรุณากรอกตัวเลขให้ถูกต้องสำหรับราคา พื้นที่ จำนวนห้องนอน และห้องน้ำ';
+        _errorMessage =
+            'กรุณากรอกตัวเลขให้ถูกต้องสำหรับราคา พื้นที่ จำนวนห้องนอน และห้องน้ำ';
       });
       return;
     }
@@ -779,11 +790,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       await _updateTags();
 
       // Navigate back to listings
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/my-listings',
-        (Route<dynamic> route) => route.isFirst,
-      );
-      
+      Navigator.pop(context, true);
     } catch (e) {
       setState(() {
         _errorMessage = 'เกิดข้อผิดพลาดในการอัปเดตรายการ: $e';
@@ -821,9 +828,9 @@ class _EditListingScreenState extends State<EditListingScreen> {
   @override
   Widget build(BuildContext context) {
     // Check if worker service field should be disabled
-    bool disableWorkerService = _currentUser != null && 
-                               _currentUser!.role == 'worker' && 
-                               _currentUser!.userId == _workerService;
+    bool disableWorkerService = _currentUser != null &&
+        _currentUser!.role == 'worker' &&
+        _currentUser!.userId == _workerService;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -839,7 +846,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onBackground),
+          icon: Icon(Icons.arrow_back,
+              color: Theme.of(context).colorScheme.onBackground),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -861,19 +869,30 @@ class _EditListingScreenState extends State<EditListingScreen> {
                               padding: const EdgeInsets.all(12),
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .error
+                                    .withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Theme.of(context).colorScheme.error.withOpacity(0.3)),
+                                border: Border.all(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .error
+                                        .withOpacity(0.3)),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
+                                  Icon(Icons.error_outline,
+                                      color:
+                                          Theme.of(context).colorScheme.error),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
                                       _errorMessage,
-                                      style:
-                                          TextStyle(color: Theme.of(context).colorScheme.error),
+                                      style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .error),
                                     ),
                                   ),
                                 ],
@@ -905,10 +924,15 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     width: 100,
                                     margin: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.surfaceVariant,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .surfaceVariant,
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
-                                          color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .outline
+                                              .withOpacity(0.5)),
                                     ),
                                     child: const Column(
                                       mainAxisAlignment:
@@ -1092,11 +1116,19 @@ class _EditListingScreenState extends State<EditListingScreen> {
                               fillColor: Theme.of(context).colorScheme.surface,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                borderSide: BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outline
+                                        .withOpacity(0.5)),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                borderSide: BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outline
+                                        .withOpacity(0.5)),
                               ),
                             ),
                           ),
@@ -1117,7 +1149,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                              border: Border.all(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outline
+                                      .withOpacity(0.5)),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
@@ -1156,7 +1192,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                              border: Border.all(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outline
+                                      .withOpacity(0.5)),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
@@ -1212,15 +1252,27 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       decoration: InputDecoration(
                                         hintText: "ไร่",
                                         filled: true,
-                                        fillColor: Theme.of(context).colorScheme.surface,
+                                        fillColor: Theme.of(context)
+                                            .colorScheme
+                                            .surface,
                                         counterText: "",
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                       ),
                                     ),
@@ -1247,14 +1299,26 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       decoration: InputDecoration(
                                         hintText: "งาน",
                                         filled: true,
-                                        fillColor: Theme.of(context).colorScheme.surface,
+                                        fillColor: Theme.of(context)
+                                            .colorScheme
+                                            .surface,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                       ),
                                     ),
@@ -1281,14 +1345,26 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       decoration: InputDecoration(
                                         hintText: "ตารางวา",
                                         filled: true,
-                                        fillColor: Theme.of(context).colorScheme.surface,
+                                        fillColor: Theme.of(context)
+                                            .colorScheme
+                                            .surface,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                       ),
                                     ),
@@ -1330,14 +1406,26 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       decoration: InputDecoration(
                                         hintText: "จำนวนห้องนอน",
                                         filled: true,
-                                        fillColor: Theme.of(context).colorScheme.surface,
+                                        fillColor: Theme.of(context)
+                                            .colorScheme
+                                            .surface,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                       ),
                                     ),
@@ -1363,14 +1451,26 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       decoration: InputDecoration(
                                         hintText: "จำนวนห้องน้ำ",
                                         filled: true,
-                                        fillColor: Theme.of(context).colorScheme.surface,
+                                        fillColor: Theme.of(context)
+                                            .colorScheme
+                                            .surface,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                       ),
                                     ),
@@ -1403,14 +1503,26 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       decoration: InputDecoration(
                                         hintText: "ละติจูด",
                                         filled: true,
-                                        fillColor: Theme.of(context).colorScheme.surface,
+                                        fillColor: Theme.of(context)
+                                            .colorScheme
+                                            .surface,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                       ),
                                     ),
@@ -1437,14 +1549,26 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       decoration: InputDecoration(
                                         hintText: "ลองติจูด",
                                         filled: true,
-                                        fillColor: Theme.of(context).colorScheme.surface,
+                                        fillColor: Theme.of(context)
+                                            .colorScheme
+                                            .surface,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline
+                                                  .withOpacity(0.5)),
                                         ),
                                       ),
                                     ),
@@ -1473,11 +1597,19 @@ class _EditListingScreenState extends State<EditListingScreen> {
                               fillColor: Theme.of(context).colorScheme.surface,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                borderSide: BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outline
+                                        .withOpacity(0.5)),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                borderSide: BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outline
+                                        .withOpacity(0.5)),
                               ),
                             ),
                           ),
@@ -1500,27 +1632,37 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                 decoration: InputDecoration(
                                   hintText: "ค้นหาจังหวัด",
                                   filled: true,
-                                  fillColor: Theme.of(context).colorScheme.surface,
+                                  fillColor:
+                                      Theme.of(context).colorScheme.surface,
                                   prefixIcon: const Icon(Icons.search),
-                                  suffixIcon: _provinceController.text.isNotEmpty
-                                      ? IconButton(
-                                          icon: const Icon(Icons.clear),
-                                          onPressed: () {
-                                            setState(() {
-                                              _provinceController.clear();
-                                              _provinceResults = [];
-                                              _selectedProvince = null;
-                                            });
-                                          },
-                                        )
-                                      : null,
+                                  suffixIcon:
+                                      _provinceController.text.isNotEmpty
+                                          ? IconButton(
+                                              icon: const Icon(Icons.clear),
+                                              onPressed: () {
+                                                setState(() {
+                                                  _provinceController.clear();
+                                                  _provinceResults = [];
+                                                  _selectedProvince = null;
+                                                });
+                                              },
+                                            )
+                                          : null,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                    borderSide: BorderSide(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline
+                                            .withOpacity(0.5)),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                    borderSide: BorderSide(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline
+                                            .withOpacity(0.5)),
                                   ),
                                 ),
                                 onChanged: (value) {
@@ -1537,7 +1679,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
                               if (_isSearchingProvince)
                                 const Padding(
                                   padding: EdgeInsets.all(8.0),
-                                  child: Center(child: CircularProgressIndicator()),
+                                  child: Center(
+                                      child: CircularProgressIndicator()),
                                 ),
                               if (_provinceResults.isNotEmpty)
                                 Container(
@@ -1545,7 +1688,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.grey.shade300),
+                                    border:
+                                        Border.all(color: Colors.grey.shade300),
                                   ),
                                   constraints: BoxConstraints(
                                     maxHeight: 200,
@@ -1583,7 +1727,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                 decoration: InputDecoration(
                                   hintText: "ค้นหาอำเภอ/เขต",
                                   filled: true,
-                                  fillColor: Theme.of(context).colorScheme.surface,
+                                  fillColor:
+                                      Theme.of(context).colorScheme.surface,
                                   prefixIcon: const Icon(Icons.search),
                                   suffixIcon: _amphurController.text.isNotEmpty
                                       ? IconButton(
@@ -1599,15 +1744,24 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       : null,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                    borderSide: BorderSide(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline
+                                            .withOpacity(0.5)),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                    borderSide: BorderSide(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline
+                                            .withOpacity(0.5)),
                                   ),
                                 ),
                                 onChanged: (value) {
-                                  if (_selectedProvince != null && value.length >= 2) {
+                                  if (_selectedProvince != null &&
+                                      value.length >= 2) {
                                     _searchAmphures(value);
                                   } else if (value.isEmpty) {
                                     setState(() {
@@ -1615,13 +1769,15 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     });
                                   }
                                 },
-                                readOnly: _selectedProvince == null || _selectedAmphur != null,
+                                readOnly: _selectedProvince == null ||
+                                    _selectedAmphur != null,
                                 enabled: _selectedProvince != null,
                               ),
                               if (_isSearchingAmphur)
                                 const Padding(
                                   padding: EdgeInsets.all(8.0),
-                                  child: Center(child: CircularProgressIndicator()),
+                                  child: Center(
+                                      child: CircularProgressIndicator()),
                                 ),
                               if (_amphurResults.isNotEmpty)
                                 Container(
@@ -1629,7 +1785,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.grey.shade300),
+                                    border:
+                                        Border.all(color: Colors.grey.shade300),
                                   ),
                                   constraints: BoxConstraints(
                                     maxHeight: 200,
@@ -1667,7 +1824,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                 decoration: InputDecoration(
                                   hintText: "ค้นหาตำบล/แขวง",
                                   filled: true,
-                                  fillColor: Theme.of(context).colorScheme.surface,
+                                  fillColor:
+                                      Theme.of(context).colorScheme.surface,
                                   prefixIcon: const Icon(Icons.search),
                                   suffixIcon: _tambonController.text.isNotEmpty
                                       ? IconButton(
@@ -1683,15 +1841,24 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       : null,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                    borderSide: BorderSide(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline
+                                            .withOpacity(0.5)),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                    borderSide: BorderSide(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline
+                                            .withOpacity(0.5)),
                                   ),
                                 ),
                                 onChanged: (value) {
-                                  if (_selectedAmphur != null && value.length >= 2) {
+                                  if (_selectedAmphur != null &&
+                                      value.length >= 2) {
                                     _searchTambons(value);
                                   } else if (value.isEmpty) {
                                     setState(() {
@@ -1699,13 +1866,15 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     });
                                   }
                                 },
-                                readOnly: _selectedAmphur == null || _selectedTambon != null,
+                                readOnly: _selectedAmphur == null ||
+                                    _selectedTambon != null,
                                 enabled: _selectedAmphur != null,
                               ),
                               if (_isSearchingTambon)
                                 const Padding(
                                   padding: EdgeInsets.all(8.0),
-                                  child: Center(child: CircularProgressIndicator()),
+                                  child: Center(
+                                      child: CircularProgressIndicator()),
                                 ),
                               if (_tambonResults.isNotEmpty)
                                 Container(
@@ -1713,7 +1882,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.grey.shade300),
+                                    border:
+                                        Border.all(color: Colors.grey.shade300),
                                   ),
                                   constraints: BoxConstraints(
                                     maxHeight: 200,
@@ -1754,11 +1924,19 @@ class _EditListingScreenState extends State<EditListingScreen> {
                               fillColor: Theme.of(context).colorScheme.surface,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                borderSide: BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outline
+                                        .withOpacity(0.5)),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                borderSide: BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outline
+                                        .withOpacity(0.5)),
                               ),
                             ),
                           ),
@@ -1781,26 +1959,36 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                 decoration: InputDecoration(
                                   hintText: "ค้นหาผู้ใช้ด้วยอีเมล",
                                   filled: true,
-                                  fillColor: Theme.of(context).colorScheme.surface,
+                                  fillColor:
+                                      Theme.of(context).colorScheme.surface,
                                   prefixIcon: const Icon(Icons.search),
-                                  suffixIcon: _searchUserController.text.isNotEmpty
-                                      ? IconButton(
-                                          icon: const Icon(Icons.clear),
-                                          onPressed: () {
-                                            setState(() {
-                                              _searchUserController.clear();
-                                              _searchResults = [];
-                                            });
-                                          },
-                                        )
-                                      : null,
+                                  suffixIcon:
+                                      _searchUserController.text.isNotEmpty
+                                          ? IconButton(
+                                              icon: const Icon(Icons.clear),
+                                              onPressed: () {
+                                                setState(() {
+                                                  _searchUserController.clear();
+                                                  _searchResults = [];
+                                                });
+                                              },
+                                            )
+                                          : null,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                    borderSide: BorderSide(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline
+                                            .withOpacity(0.5)),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                    borderSide: BorderSide(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline
+                                            .withOpacity(0.5)),
                                   ),
                                 ),
                                 onChanged: (value) {
@@ -1816,7 +2004,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
                               if (_isSearchingUser)
                                 const Padding(
                                   padding: EdgeInsets.all(8.0),
-                                  child: Center(child: CircularProgressIndicator()),
+                                  child: Center(
+                                      child: CircularProgressIndicator()),
                                 ),
                               if (_searchResults.isNotEmpty)
                                 Container(
@@ -1824,17 +2013,20 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.grey.shade300),
+                                    border:
+                                        Border.all(color: Colors.grey.shade300),
                                   ),
                                   child: ListView.builder(
                                     shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     itemCount: _searchResults.length,
                                     itemBuilder: (context, index) {
                                       final user = _searchResults[index]!;
                                       return ListTile(
                                         title: Text(user.email),
-                                        subtitle: Text('Name: ${user.fullName}'),
+                                        subtitle:
+                                            Text('Name: ${user.fullName}'),
                                         onTap: () => _selectUser(user),
                                       );
                                     },
@@ -1858,7 +2050,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             spacing: 8,
                             runSpacing: 8,
                             children: _availableTags.entries.map((entry) {
-                              final isSelected = _selectedTags.contains(entry.key);
+                              final isSelected =
+                                  _selectedTags.contains(entry.key);
                               return InkWell(
                                 onTap: () => _toggleTag(entry.key),
                                 child: Container(
@@ -1867,15 +2060,21 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   decoration: BoxDecoration(
                                     color: isSelected
                                         ? Theme.of(context).colorScheme.primary
-                                        : Theme.of(context).colorScheme.surfaceVariant,
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .surfaceVariant,
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
                                     entry.value,
                                     style: TextStyle(
                                       color: isSelected
-                                          ? Theme.of(context).colorScheme.onPrimary
-                                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .onPrimary
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
                                       fontWeight: isSelected
                                           ? FontWeight.bold
                                           : FontWeight.normal,
@@ -1906,11 +2105,19 @@ class _EditListingScreenState extends State<EditListingScreen> {
                               fillColor: Theme.of(context).colorScheme.surface,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                borderSide: BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outline
+                                        .withOpacity(0.5)),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                borderSide: BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outline
+                                        .withOpacity(0.5)),
                               ),
                             ),
                           ),
@@ -1940,11 +2147,14 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                 items: _workers.map((User? worker) {
                                   return DropdownMenuItem<int>(
                                     value: worker!.userId,
-                                    child: Text(worker.email, style: TextStyle(color: Theme.of(context).focusColor,)),
+                                    child: Text(worker.email,
+                                        style: TextStyle(
+                                          color: Theme.of(context).focusColor,
+                                        )),
                                   );
                                 }).toList(),
-                                onChanged: disableWorkerService 
-                                    ? null 
+                                onChanged: disableWorkerService
+                                    ? null
                                     : (int? newValue) {
                                         if (newValue != null) {
                                           setState(() {
@@ -2002,15 +2212,19 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _updateListing,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary,
-                                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onPrimary,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                               child: _isLoading
                                   ? CircularProgressIndicator(
-                                      color: Theme.of(context).colorScheme.onPrimary)
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary)
                                   : const Text(
                                       "อัปเดตรายการ",
                                       style: TextStyle(

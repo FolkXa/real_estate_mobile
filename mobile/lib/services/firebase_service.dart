@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:real_estate_project/models/user.dart';
 import '../models/real_estate.dart';
 
@@ -349,6 +350,62 @@ class FirebaseService {
       }
     } catch (e) {
       print("❌ Error incrementing view count: $e");
+    }
+  }
+
+  Future<void> deleteRealEstate(int realEstateId) async {
+    final firestore = FirebaseFirestore.instance;
+    final storage = FirebaseStorage.instance;
+
+    try {
+      // 1. ลบเอกสาร real_estate
+      final realEstateDocs = await firestore
+          .collection('real_estate')
+          .where('real_estate_id', isEqualTo: realEstateId)
+          .get();
+
+      for (var doc in realEstateDocs.docs) {
+        await doc.reference.delete();
+      }
+
+      // 2. ลบรูปภาพจาก image_real_estate
+      final imageDocs = await firestore
+          .collection('image_real_estate')
+          .where('real_estate_id', isEqualTo: realEstateId)
+          .get();
+
+      for (var imageDoc in imageDocs.docs) {
+        final imageData = imageDoc.data();
+        final imageUrl = imageData['image_path'] ?? '';
+
+        // ลบไฟล์จาก Firebase Storage
+        if (imageUrl.isNotEmpty) {
+          try {
+            final ref = storage.refFromURL(imageUrl);
+            await ref.delete();
+          } catch (e) {
+            print('Failed to delete image from storage: $e');
+          }
+        }
+
+        // ลบ document ของรูป
+        await imageDoc.reference.delete();
+      }
+
+      // 3. ลบ tag ที่เกี่ยวข้อง
+      final tagDocs = await firestore
+          .collection('tags_real_estate')
+          .where('real_estate_id', isEqualTo: realEstateId)
+          .get();
+
+      for (var tagDoc in tagDocs.docs) {
+        await tagDoc.reference.delete();
+      }
+
+      print('Successfully deleted real estate: $realEstateId');
+    } catch (e) {
+      print('Error deleting real estate: $e');
+      rethrow;
     }
   }
 }

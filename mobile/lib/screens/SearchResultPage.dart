@@ -113,8 +113,7 @@ class _SearchResultPageState extends State<SearchResultPage> {
                             imagePath: imageSnapshot.data!,
                             price: item['price'].toString(),
                             name: item['name'] ?? "ไม่ระบุชื่อ",
-                            location:
-                                "${item['province'] ?? ''} | ${item['type_realestate'] ?? ''}",
+                            location: item['province'],
                             sellType: item['type_sell'] ?? ""),
                       );
                     },

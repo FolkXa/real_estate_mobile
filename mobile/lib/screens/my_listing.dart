@@ -27,17 +27,18 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
     _loadData();
   }
 
-  void _loadData() {
+  void _loadData() async {
     final currentUser = _auth.currentUser;
 
     if (currentUser != null) {
       _userFuture = _firebaseService.getUserByEmail(currentUser.email!);
-      _userFuture.then((user) {
-        if (user != null) {
+      final user = await _userFuture;
+      if (user != null) {
+        setState(() {
           _myListingsFuture =
               _firebaseService.getRealEstateByWorkerService(user.userId);
-        }
-      });
+        });
+      }
     }
   }
 
@@ -55,6 +56,8 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -63,9 +66,7 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
         title: Text(
           "My Listing",
           style: TextStyle(
-            color: Theme.of(context).brightness == Brightness.light 
-                ? Colors.black87 
-                : Colors.white,
+            color: colorScheme.onBackground,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -119,18 +120,20 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).brightness == Brightness.light 
-                                ? Colors.black87 
-                                : Colors.white,
+                            color:
+                                Theme.of(context).brightness == Brightness.light
+                                    ? Colors.black87
+                                    : Colors.white,
                           ),
                         ),
                         ElevatedButton.icon(
                           onPressed: _navigateToCreateListing,
                           icon: const Icon(Icons.add),
-                          label: const Text("Create new sell"),
+                          label: const Text("Create new list",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
@@ -148,8 +151,9 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
                                 'No listings yet. Create your first listing!',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Theme.of(context).brightness == Brightness.light 
-                                      ? Colors.black87 
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.light
+                                      ? Colors.black87
                                       : Colors.white70,
                                 ),
                               ),
@@ -162,18 +166,19 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
                                   property: property,
                                   onTap: () {
                                     Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                PropertyDetailScreen(
-                                                  realEstateId:
-                                                      property.realEstateId,
-                                                ))).then((_) {
-                                      // Refresh when returning from detail screen
-                                      setState(() {
-                                        _loadData();
-                                      });
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            PropertyDetailScreen(
+                                                realEstateId:
+                                                    property.realEstateId),
+                                      ),
+                                    ).then((_) {
+                                      _loadData(); // ✅ reload data
                                     });
+                                  },
+                                  onEdited: () {
+                                    _loadData(); // ✅ reload data after edit
                                   },
                                 );
                               },
@@ -193,28 +198,32 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
 class PropertyListingCard extends StatelessWidget {
   final RealEstate property;
   final VoidCallback onTap;
+  final VoidCallback onEdited;
 
   const PropertyListingCard({
     Key? key,
     required this.property,
     required this.onTap,
+    required this.onEdited,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+    final colorScheme = Theme.of(context).colorScheme; // ✅ เพิ่มตรงนี้
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
+        color: Theme.of(context).cardColor, // auto adapt
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
+          if (!isDarkMode)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
         ],
       ),
       child: Column(
@@ -320,7 +329,9 @@ class PropertyListingCard extends StatelessWidget {
                               (property.view).toString(),
                               style: TextStyle(
                                 fontSize: 14,
-                                color: isDarkMode ? Colors.white70 : Colors.black87,
+                                color: isDarkMode
+                                    ? Colors.white70
+                                    : Colors.black87,
                               ),
                             ),
                           ],
@@ -329,14 +340,18 @@ class PropertyListingCard extends StatelessWidget {
                         Row(
                           children: [
                             Icon(Icons.location_on,
-                                color: isDarkMode ? Colors.grey[400] : Colors.grey, size: 16),
+                                color:
+                                    isDarkMode ? Colors.grey[400] : Colors.grey,
+                                size: 16),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
                                 "${property.address} ${property.amphur} ${property.tambon} ${property.province}",
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: isDarkMode ? Colors.grey[400] : Colors.grey,
+                                  color: isDarkMode
+                                      ? Colors.grey[400]
+                                      : Colors.grey,
                                 ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -346,11 +361,15 @@ class PropertyListingCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "\฿ ${Formatters.formatCurrency(property.price)}",
+                          property.typeSell == 'เช่า'
+                              ? "฿ ${Formatters.formatCurrency(property.price)} /เดือน"
+                              : "฿ ${Formatters.formatCurrency(property.price)}",
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: isDarkMode ? Colors.yellow : Colors.indigo,
+                            color: isDarkMode
+                                ? const Color.fromARGB(255, 169, 130, 237)
+                                : Colors.deepPurple,
                           ),
                         ),
                       ],
@@ -373,16 +392,19 @@ class PropertyListingCard extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => EditListingScreen(
-                            realEstateId: property.realEstateId,
-                          ),
+                              realEstateId: property.realEstateId),
                         ),
-                      );
+                      ).then((updated) {
+                        if (updated == true) {
+                          onEdited(); // ✅ เรียก callback ไปให้ MyListingsScreen จัดการ
+                        }
+                      });
                     },
                     icon: const Icon(Icons.edit, size: 16),
                     label: const Text("Edit"),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.blue,
-                      side: const BorderSide(color: Colors.blue),
+                      foregroundColor: colorScheme.primary,
+                      side: BorderSide(color: colorScheme.primary),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -407,8 +429,8 @@ class PropertyListingCard extends StatelessWidget {
                             ),
                             TextButton(
                               onPressed: () {
-                                // Implement delete
-                                Navigator.pop(context);
+                                Navigator.pop(context); // ปิด Dialog ก่อน
+                                _deleteListing(context, property);
                               },
                               child: const Text("Delete",
                                   style: TextStyle(color: Colors.red)),
@@ -420,8 +442,8 @@ class PropertyListingCard extends StatelessWidget {
                     icon: const Icon(Icons.delete, size: 16),
                     label: const Text("Delete"),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
+                      foregroundColor: colorScheme.error,
+                      side: BorderSide(color: colorScheme.error),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -435,5 +457,25 @@ class PropertyListingCard extends StatelessWidget {
       ),
     );
   }
-}
 
+  void _deleteListing(BuildContext context, RealEstate property) async {
+    final firebaseService = FirebaseService();
+
+    try {
+      // เรียกเมธอดลบรูป + ลบข้อมูลอสังหา
+      await firebaseService.deleteRealEstate(property.realEstateId);
+
+      // เรียก callback เพื่อ refresh
+      onEdited();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("ลบรายการสำเร็จ")),
+      );
+    } catch (e) {
+      print('Error deleting listing: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("เกิดข้อผิดพลาดในการลบ")),
+      );
+    }
+  }
+}
