@@ -27,7 +27,6 @@ dependencies:
   cached_network_image: ^3.3.0
   mime: ^1.0.4
   path: ^1.9.1
-  flutter_image_compress: ^2.1.0
 
   # UI packages
   flutter_slidable: ^4.0.0
