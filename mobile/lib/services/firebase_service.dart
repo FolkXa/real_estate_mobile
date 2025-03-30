@@ -333,4 +333,24 @@ class FirebaseService {
 
     return favSnapshot.docs.map((doc) => doc['real_estate_id'] as int).toSet();
   }
+
+  Future<void> incrementViewCount(int realEstateId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('real_estate')
+          .where('real_estate_id', isEqualTo: realEstateId)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final docId = snapshot.docs.first.id;
+        final currentView = snapshot.docs.first['view'] ?? 0;
+        await _firestore.collection('real_estate').doc(docId).update({
+          'view': currentView + 1,
+        });
+      }
+    } catch (e) {
+      print("❌ Error incrementing view count: $e");
+    }
+  }
 }

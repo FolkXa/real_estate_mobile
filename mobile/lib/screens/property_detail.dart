@@ -35,6 +35,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _firebaseService.incrementViewCount(widget.realEstateId);
     _loadData();
   }
 
@@ -162,8 +163,9 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                               child: IconButton(
                                 icon: const Icon(Icons.arrow_back_ios_new,
                                     size: 18),
-                                onPressed: () => Navigator.pushReplacementNamed(
-                                    context, '/home'),
+                                // onPressed: () => Navigator.pushReplacementNamed(
+                                //     context, '/home'),
+                                onPressed: () => Navigator.pop(context),
                               ),
                             ),
                             Row(
@@ -329,9 +331,15 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(width: 16),
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text('พนักงานดูแล',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold, fontSize: 20)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: FutureBuilder<User?>(
                     future: _agentFuture,
                     builder: (context, snapshot) {
@@ -390,37 +398,49 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     },
                   ),
                 ),
+                const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Text('Rooms',
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  child: Text('ประเภทและจำนวนห้อง',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold, fontSize: 20)),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       PropertyFeature(
-                          icon: Icons.home,
-                          text: property.typeRealestate,
-                          color: theme.colorScheme.primary),
+                        icon: Icons.home,
+                        text: property.typeRealestate,
+                        color: theme.colorScheme.primary,
+                        fontSize: 14,
+                        iconSize: 22,
+                      ),
                       PropertyFeature(
-                          icon: Icons.bed,
-                          text: '2 Bedroom',
-                          color: Colors.blue),
+                        icon: Icons.bed,
+                        text: '${property.bedroom} Bedroom',
+                        color: Colors.blue.shade600,
+                        fontSize: 14,
+                        iconSize: 22,
+                      ),
                       PropertyFeature(
-                          icon: Icons.bathtub,
-                          text: '1 Bathroom',
-                          color: Colors.red),
+                        icon: Icons.bathtub,
+                        text: '${property.bathroom} Bathroom',
+                        color: Colors.red.shade600,
+                        fontSize: 14,
+                        iconSize: 22,
+                      ),
                     ],
                   ),
                 ),
+
+                const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Text('Details',
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  child: Text('รายละเอียด',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold, fontSize: 20)),
                 ),
                 // กรอบแสดงรายละเอียด
                 Container(
@@ -439,12 +459,13 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
 
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Text('Location & Public Facilities',
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  child: Text('ที่ตั้งอสังหา',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold, fontSize: 20)),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -475,7 +496,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                             Icon(Icons.navigation,
                                 color: theme.colorScheme.primary),
                             const SizedBox(width: 8),
-                            const Text('Minimap Location'),
+                            const Text('แผนที่แบบย่อ'),
                             const Spacer(),
                             IconButton(
                               icon: Icon(
@@ -522,11 +543,14 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Text('Nearby From this Location',
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  child: Text('อสังหาที่แนะนำ',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      )),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -552,6 +576,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                           mainAxisSpacing: 12,
                           childAspectRatio: 0.7,
                         ),
+                        padding: EdgeInsets.only(top: 4),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: properties.length,
