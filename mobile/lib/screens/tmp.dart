@@ -3,11 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:real_estate_project/models/thailand_division.dart';
 import 'dart:io';
-import '../models/area.dart';
+import '../models/real_estate.dart';
 import '../models/user.dart';
 import '../services/firebase_service.dart';
+import '../utils/constants.dart';
 import '../utils/image_viewer.dart';
 
 class EditListingScreen extends StatefulWidget {
@@ -33,22 +33,15 @@ class _EditListingScreenState extends State<EditListingScreen> {
   final TextEditingController _tambonController = TextEditingController();
   final TextEditingController _detailsController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
-  
-  // Area controllers
-  final TextEditingController _raiController = TextEditingController();
-  final TextEditingController _squareWaController = TextEditingController();
-  final TextEditingController _squareMeterController = TextEditingController();
-  
+  final TextEditingController _areaController = TextEditingController();
   final TextEditingController _bedroomController = TextEditingController();
   final TextEditingController _bathroomController = TextEditingController();
-  final TextEditingController _searchUserController = TextEditingController();
 
   String _selectedType = 'คอนโด';
   String _selectedSellType = 'ขายขาด';
   bool _isPremium = false;
   bool _isLoading = false;
   bool _isInitialLoading = true;
-  bool _isSearchingUser = false;
   String _errorMessage = '';
   List<String> _existingImages = [];
   List<File> _newImages = [];
@@ -56,15 +49,12 @@ class _EditListingScreenState extends State<EditListingScreen> {
   User? _currentUser;
   List<int> _selectedTags = [];
   List<User?> _workers = [];
-  List<User?> _searchResults = [];
   int _workerService = 1;
-  int _ownerId = 0;
   String _docId = '';
-  ThailandDivision? _thailandDivision;
 
   final List<String> _estateTypes = [
     'คอนโด',
-    'บ้านเดี่ยว',
+    'บ้าน',
     'ทาวน์เฮ้าส์',
     'ที่ดิน',
     'อพาร์ทเมนท์',
@@ -82,31 +72,6 @@ class _EditListingScreenState extends State<EditListingScreen> {
     _loadData();
   }
 
-  // Convert square wa to Thai area units
-  void _convertAreaToThaiUnits(Area area) {
-    // Set the values to controllers
-    _raiController.text = area.rai.toString();
-    _squareWaController.text = area.squareWa.toString();
-    _squareMeterController.text = area.squareMeter.toString();
-  }
-
-  // Calculate total area in square wa
-  double _calculateTotalAreaInSquareWa() {
-    try {
-      double rai = double.tryParse(_raiController.text.replaceAll(',', '')) ?? 0;
-      double squareWa = double.tryParse(_squareWaController.text.replaceAll(',', '')) ?? 0;
-      double squareMeter = double.tryParse(_squareMeterController.text.replaceAll(',', '')) ?? 0;
-      
-      // Convert all to square wa
-      Area area = Area(rai: rai, squareWa: squareWa, squareMeter: squareMeter);
-      
-      return area.totalSquareWa;
-    } catch (e) {
-      print('Error calculating area: $e');
-      return 0;
-    }
-  }
-
   Future<void> _loadData() async {
     try {
       // Load current user
@@ -117,27 +82,17 @@ class _EditListingScreenState extends State<EditListingScreen> {
           _currentUser = user;
         });
       }
+
       // Load property data
       final property =
           await _firebaseService.getRealEstateById(widget.realEstateId);
       if (property == null) {
         setState(() {
-          _errorMessage = 'ไม่พบข้อมูลอสังหาริมทรัพย์';
+          _errorMessage = 'Property not found';
           _isInitialLoading = false;
         });
         return;
       }
-
-      final owner = await _firebaseService.getUserById(property.userId);
-      if (owner == null) {
-        setState(() {
-          _errorMessage = 'ไม่พบข้อมูลเจ้าของ';
-          _isInitialLoading = false;
-        });
-        return;
-      }
-
-      _selectUser(owner);
 
       // Get document ID for the property
       final QuerySnapshot snapshot = await _firestore
@@ -161,11 +116,6 @@ class _EditListingScreenState extends State<EditListingScreen> {
       // Load workers
       await _loadWorkerService();
 
-      await _loadThailandDivision();
-
-      // Convert area to Thai units
-      _convertAreaToThaiUnits(property.area);
-      
       // Populate form fields
       _nameController.text = property.name;
       _addressController.text = property.address;
@@ -174,28 +124,20 @@ class _EditListingScreenState extends State<EditListingScreen> {
       _tambonController.text = property.tambon;
       _detailsController.text = property.details;
       _priceController.text = property.price.toString();
+      _areaController.text = property.area.toString();
       _bedroomController.text = property.bedroom.toString();
       _bathroomController.text = property.bathroom.toString();
 
       setState(() {
         _selectedType = property.typeRealestate;
-        
-        // Validate that the selected type exists in the dropdown options
-        if (!_estateTypes.contains(_selectedType)) {
-          // If not found, set to the first option
-          _selectedType = _estateTypes[0];
-          print('Warning: Property type "${property.typeRealestate}" not found in options, defaulting to ${_estateTypes[0]}');
-        }
-        
         _selectedSellType = property.typeSell;
         _isPremium = property.premiumPromote;
-        _workerService = int.tryParse(property.workerService.toString()) ?? 1;
-        _ownerId = property.userId;
+        _workerService = property.workerService;
         _isInitialLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'เกิดข้อผิดพลาดในการโหลดข้อมูล: $e';
+        _errorMessage = 'Error loading property data: $e';
         _isInitialLoading = false;
       });
       print('Error loading property data: $e');
@@ -220,18 +162,6 @@ class _EditListingScreenState extends State<EditListingScreen> {
       });
     } catch (e) {
       print('Error loading tags: $e');
-    }
-  }
-
-  Future<void> _loadThailandDivision() async {
-    try {
-      final divisions = ThailandDivision();
-      await divisions.loadJsonData();
-      setState(() {
-        _thailandDivision = divisions;
-      });
-    } catch (e) {
-      print('Error loading Thailand division: $e');
     }
   }
 
@@ -266,53 +196,6 @@ class _EditListingScreenState extends State<EditListingScreen> {
     } catch (e) {
       print('Error loading workers: $e');
     }
-  }
-
-  Future<void> _searchUsersByEmail(String email) async {
-    if (email.isEmpty) {
-      setState(() {
-        _searchResults = [];
-        _isSearchingUser = false;
-      });
-      return;
-    }
-
-    setState(() {
-      _isSearchingUser = true;
-    });
-
-    try {
-      final QuerySnapshot snapshot = await _firestore
-          .collection('users')
-          .where('email', isGreaterThanOrEqualTo: email)
-          .where('email', isLessThanOrEqualTo: email + '\uf8ff')
-          .limit(5)
-          .get();
-
-      List<User?> users = [];
-      for (var doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        users.add(User.fromMap(data));
-      }
-
-      setState(() {
-        _searchResults = users;
-        _isSearchingUser = false;
-      });
-    } catch (e) {
-      print('Error searching users: $e');
-      setState(() {
-        _isSearchingUser = false;
-      });
-    }
-  }
-
-  void _selectUser(User user) {
-    setState(() {
-      _ownerId = user.userId;
-      _searchUserController.text = user.email;
-      _searchResults = [];
-    });
   }
 
   Future<void> _pickImages() async {
@@ -454,40 +337,10 @@ class _EditListingScreenState extends State<EditListingScreen> {
     }
   }
 
-  bool _validateAreaFields() {
-    // Validate rai (max 4 characters)
-    // if (_raiController.text.length > 4) {
-    //   setState(() {
-    //     _errorMessage = 'จำนวนไร่ต้องไม่เกิน 4 หลัก';
-    //   });
-    //   return false;
-    // }
-    
-    // // Validate square wa (0-399)
-    // int squareWa = int.tryParse(_squareWaController.text) ?? 0;
-    // if (squareWa < 0 || squareWa >= 400) {
-    //   setState(() {
-    //     _errorMessage = 'ตารางวาต้องอยู่ระหว่าง 0-399';
-    //   });
-    //   return false;
-    // }
-    
-    // // Validate square meter (0-3)
-    // int squareMeter = int.tryParse(_squareMeterController.text) ?? 0;
-    // if (squareMeter < 0 || squareMeter >= 4) {
-    //   setState(() {
-    //     _errorMessage = 'ตารางเมตรต้องอยู่ระหว่าง 0-3';
-    //   });
-    //   return false;
-    // }
-    
-    return true;
-  }
-
   Future<void> _updateListing() async {
     if (_currentUser == null) {
       setState(() {
-        _errorMessage = 'คุณต้องเข้าสู่ระบบก่อนแก้ไขรายการ';
+        _errorMessage = 'You must be logged in to update a listing';
       });
       return;
     }
@@ -499,46 +352,32 @@ class _EditListingScreenState extends State<EditListingScreen> {
         _tambonController.text.isEmpty ||
         _detailsController.text.isEmpty ||
         _priceController.text.isEmpty ||
-        (_raiController.text.isEmpty && 
-         _squareWaController.text.isEmpty && 
-         _squareMeterController.text.isEmpty) ||
+        _areaController.text.isEmpty ||
         _bedroomController.text.isEmpty ||
         _bathroomController.text.isEmpty) {
       setState(() {
-        _errorMessage = 'กรุณากรอกข้อมูลให้ครบทุกช่อง';
+        _errorMessage = 'Please fill in all required fields';
       });
       return;
     }
 
     if (_existingImages.isEmpty && _newImages.isEmpty) {
       setState(() {
-        _errorMessage = 'กรุณาเลือกรูปภาพอย่างน้อย 1 รูป';
+        _errorMessage = 'Please select at least one image';
       });
       return;
     }
 
-    // Validate area fields
-    if (!_validateAreaFields()) {
-      return;
-    }
-
-    int price, bedroom, bathroom;
-    double area;
+    int price, area, bedroom, bathroom;
     try {
       price = int.parse(_priceController.text.replaceAll(',', ''));
-      area = _calculateTotalAreaInSquareWa();
+      area = int.parse(_areaController.text.replaceAll(',', ''));
       bedroom = int.parse(_bedroomController.text);
       bathroom = int.parse(_bathroomController.text);
-      
-      if (area <= 0) {
-        setState(() {
-          _errorMessage = 'กรุณากรอกพื้นที่ให้ถูกต้อง';
-        });
-        return;
-      }
     } catch (e) {
       setState(() {
-        _errorMessage = 'กรุณากรอกตัวเลขให้ถูกต้องสำหรับราคา พื้นที่ จำนวนห้องนอน และห้องน้ำ';
+        _errorMessage =
+            'Please enter valid numbers for price, area, bedrooms, and bathrooms';
       });
       return;
     }
@@ -566,11 +405,10 @@ class _EditListingScreenState extends State<EditListingScreen> {
           'type_realestate': _selectedType,
           'type_sell': _selectedSellType,
           'worker_service': _workerService,
-          'user_id': _ownerId,
         });
       } else {
         setState(() {
-          _errorMessage = 'ข้อผิดพลาด: ไม่พบเอกสารอสังหาริมทรัพย์';
+          _errorMessage = 'Error: Could not find the property document';
           _isLoading = false;
         });
         return;
@@ -586,14 +424,10 @@ class _EditListingScreenState extends State<EditListingScreen> {
       await _updateTags();
 
       // Navigate back to listings
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/my-listings',
-        (Route<dynamic> route) => route.isFirst,
-      );
-      
+      Navigator.pushNamedAndRemoveUntil(context, '/my-listings', (_) => false);
     } catch (e) {
       setState(() {
-        _errorMessage = 'เกิดข้อผิดพลาดในการอัปเดตรายการ: $e';
+        _errorMessage = 'Error updating listing: $e';
       });
       print('Error updating listing: $e');
     } finally {
@@ -627,18 +461,13 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Check if worker service field should be disabled
-    bool disableWorkerService = _currentUser != null && 
-                               _currentUser!.role == 'worker' && 
-                               _currentUser!.userId == _workerService;
-
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
-          "Edit My Listing",
+          "Edit Listing",
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.bold,
@@ -653,11 +482,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
       body: _isInitialLoading
           ? const Center(child: CircularProgressIndicator())
           : _currentUser == null
-              ? const Center(child: Text('กำลังโหลดข้อมูลผู้ใช้...'))
+              ? const Center(child: Text('Loading user data...'))
               : _currentUser!.role != 'worker'
                   ? const Center(
                       child:
-                          Text('คุณไม่มีสิทธิ์ในการแก้ไขรายการอสังหาริมทรัพย์'))
+                          Text('You do not have permission to edit listings'))
                   : SingleChildScrollView(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -690,7 +519,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                           // Estate Images
                           const Text(
-                            "รูปภาพอสังหาริมทรัพย์",
+                            "Estate Images",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -725,7 +554,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                         Icon(Icons.add_photo_alternate,
                                             size: 32, color: Colors.grey),
                                         SizedBox(height: 4),
-                                        Text("เพิ่มรูปภาพ",
+                                        Text("Add Images",
                                             style: TextStyle(fontSize: 12)),
                                       ],
                                     ),
@@ -794,7 +623,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                                           vertical: 2),
                                                       color: Colors.black54,
                                                       child: const Text(
-                                                        "ภาพหลัก",
+                                                        "Main Image",
                                                         textAlign:
                                                             TextAlign.center,
                                                         style: TextStyle(
@@ -860,7 +689,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                                         .symmetric(vertical: 2),
                                                     color: Colors.black54,
                                                     child: const Text(
-                                                      "ภาพหลัก",
+                                                      "Main Image",
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: TextStyle(
@@ -885,7 +714,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                           // Estate Name
                           const Text(
-                            "ชื่ออสังหาริมทรัพย์",
+                            "Estate Name",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -895,7 +724,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           TextFormField(
                             controller: _nameController,
                             decoration: InputDecoration(
-                              hintText: "เช่น บ้านเดี่ยว 100 ตรว. เขตห้วยขวาง",
+                              hintText: "e.g. บ้านเดี่ยว 100 ตรว. เขตห้วยขวาง",
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
@@ -915,7 +744,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                           // Estate Type
                           const Text(
-                            "ประเภทอสังหาริมทรัพย์",
+                            "Estate Type",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -954,7 +783,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                           // Sell Type
                           const Text(
-                            "ประเภทการขาย",
+                            "Listing Type",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -991,135 +820,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                           const SizedBox(height: 16),
 
-                          // Area Fields (Rai, Square Wa, Square Meter)
-                          const Text(
-                            "พื้นที่",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              // Rai
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "ไร่",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    TextFormField(
-                                      controller: _raiController,
-                                      keyboardType: TextInputType.number,
-                                      maxLength: 4,
-                                      decoration: InputDecoration(
-                                        hintText: "ไร่",
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        counterText: "",
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Square Wa
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "ตารางวา",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    TextFormField(
-                                      controller: _squareWaController,
-                                      keyboardType: TextInputType.number,
-                                      decoration: InputDecoration(
-                                        hintText: "ตารางวา",
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Square Meter
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "ตารางเมตร",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    TextFormField(
-                                      controller: _squareMeterController,
-                                      keyboardType: TextInputType.number,
-                                      decoration: InputDecoration(
-                                        hintText: "ตารางเมตร",
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "* พื้นที่ทั้งหมดจะถูกแปลงเป็นตารางวาเพื่อบันทึกลงฐานข้อมูล",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Bedrooms and Bathrooms
+                          // Estate Details (Area, Bedrooms, Bathrooms)
                           Row(
                             children: [
                               Expanded(
@@ -1127,7 +828,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      "ห้องนอน",
+                                      "Area (sq.wa)",
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -1135,19 +836,23 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     TextFormField(
-                                      controller: _bedroomController,
+                                      controller: _areaController,
                                       keyboardType: TextInputType.number,
                                       decoration: InputDecoration(
-                                        hintText: "จำนวนห้องนอน",
+                                        hintText: "Area",
                                         filled: true,
                                         fillColor: Colors.white,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Colors.grey.shade300),
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Colors.grey.shade300),
                                         ),
                                       ),
                                     ),
@@ -1160,7 +865,44 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      "ห้องน้ำ",
+                                      "Bedrooms",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TextFormField(
+                                      controller: _bedroomController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        hintText: "Bedrooms",
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Colors.grey.shade300),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Colors.grey.shade300),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "Bathrooms",
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -1171,12 +913,14 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       controller: _bathroomController,
                                       keyboardType: TextInputType.number,
                                       decoration: InputDecoration(
-                                        hintText: "จำนวนห้องน้ำ",
+                                        hintText: "Bathrooms",
                                         filled: true,
                                         fillColor: Colors.white,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Colors.grey.shade300),
                                         ),
                                       ),
                                     ),
@@ -1190,7 +934,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                           // Address
                           const Text(
-                            "ที่อยู่",
+                            "Address",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1200,16 +944,18 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           TextFormField(
                             controller: _addressController,
                             decoration: InputDecoration(
-                              hintText: "บ้านเลขที่ ถนน ซอย",
+                              hintText: "Street address",
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                             ),
                           ),
@@ -1224,7 +970,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      "จังหวัด",
+                                      "Province",
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -1234,16 +980,20 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     TextFormField(
                                       controller: _provinceController,
                                       decoration: InputDecoration(
-                                        hintText: "จังหวัด",
+                                        hintText: "Province",
                                         filled: true,
                                         fillColor: Colors.white,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Colors.grey.shade300),
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Colors.grey.shade300),
                                         ),
                                       ),
                                     ),
@@ -1256,7 +1006,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      "อำเภอ/เขต",
+                                      "District",
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -1266,16 +1016,20 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     TextFormField(
                                       controller: _amphurController,
                                       decoration: InputDecoration(
-                                        hintText: "อำเภอ/เขต",
+                                        hintText: "District",
                                         filled: true,
                                         fillColor: Colors.white,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Colors.grey.shade300),
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                              color: Colors.grey.shade300),
                                         ),
                                       ),
                                     ),
@@ -1289,7 +1043,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                           // Tambon (Sub-district)
                           const Text(
-                            "ตำบล/แขวง",
+                            "Sub-district",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1299,16 +1053,18 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           TextFormField(
                             controller: _tambonController,
                             decoration: InputDecoration(
-                              hintText: "ตำบล/แขวง",
+                              hintText: "Sub-district",
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                             ),
                           ),
@@ -1317,7 +1073,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                           // Price
                           const Text(
-                            "ราคา",
+                            "Price",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1328,106 +1084,28 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             controller: _priceController,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
-                              hintText: "ราคา (บาท)",
+                              hintText: "Price in THB",
                               prefixText: "฿ ",
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                             ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Owner (user_id) search
-                          const Text(
-                            "เจ้าของอสังหาริมทรัพย์",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Column(
-                            children: [
-                              TextFormField(
-                                controller: _searchUserController,
-                                decoration: InputDecoration(
-                                  hintText: "ค้นหาผู้ใช้ด้วยอีเมล",
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  prefixIcon: const Icon(Icons.search),
-                                  suffixIcon: _searchUserController.text.isNotEmpty
-                                      ? IconButton(
-                                          icon: const Icon(Icons.clear),
-                                          onPressed: () {
-                                            setState(() {
-                                              _searchUserController.clear();
-                                              _searchResults = [];
-                                            });
-                                          },
-                                        )
-                                      : null,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey.shade300),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey.shade300),
-                                  ),
-                                ),
-                                onChanged: (value) {
-                                  if (value.length >= 3) {
-                                    _searchUsersByEmail(value);
-                                  } else if (value.isEmpty) {
-                                    setState(() {
-                                      _searchResults = [];
-                                    });
-                                  }
-                                },
-                              ),
-                              if (_isSearchingUser)
-                                const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Center(child: CircularProgressIndicator()),
-                                ),
-                              if (_searchResults.isNotEmpty)
-                                Container(
-                                  margin: const EdgeInsets.only(top: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.grey.shade300),
-                                  ),
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    itemCount: _searchResults.length,
-                                    itemBuilder: (context, index) {
-                                      final user = _searchResults[index]!;
-                                      return ListTile(
-                                        title: Text(user.email),
-                                        subtitle: Text('Name: ${user.fullName}'),
-                                        onTap: () => _selectUser(user),
-                                      );
-                                    },
-                                  ),
-                                ),
-                            ],
                           ),
 
                           const SizedBox(height: 16),
 
                           // Tags
                           const Text(
-                            "แท็กอสังหาริมทรัพย์",
+                            "Estate Tags",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1438,7 +1116,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             spacing: 8,
                             runSpacing: 8,
                             children: _availableTags.entries.map((entry) {
-                              final isSelected = _selectedTags.contains(entry.key);
+                              final isSelected =
+                                  _selectedTags.contains(entry.key);
                               return InkWell(
                                 onTap: () => _toggleTag(entry.key),
                                 child: Container(
@@ -1470,7 +1149,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                           // Details
                           const Text(
-                            "รายละเอียดอสังหาริมทรัพย์",
+                            "Estate Description",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1481,16 +1160,18 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             controller: _detailsController,
                             maxLines: 5,
                             decoration: InputDecoration(
-                              hintText: "อธิบายรายละเอียดอสังหาริมทรัพย์...",
+                              hintText: "Describe your estate...",
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                             ),
                           ),
@@ -1499,7 +1180,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                           // Worker Service Level
                           const Text(
-                            "พนักงานดูแล",
+                            "Worker Service",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1523,44 +1204,30 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     child: Text(worker.email),
                                   );
                                 }).toList(),
-                                onChanged: disableWorkerService 
-                                    ? null 
-                                    : (int? newValue) {
-                                        if (newValue != null) {
-                                          setState(() {
-                                            _workerService = newValue;
-                                          });
-                                        }
-                                      },
+                                onChanged: (int? newValue) {
+                                  if (newValue != null) {
+                                    setState(() {
+                                      _workerService = newValue;
+                                    });
+                                  }
+                                },
                               ),
                             ),
                           ),
-                          if (disableWorkerService)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4.0),
-                              child: Text(
-                                "* คุณไม่สามารถเปลี่ยนพนักงานดูแลได้เนื่องจากคุณเป็นพนักงานดูแลรายการนี้",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ),
 
                           const SizedBox(height: 16),
 
                           // Premium Promotion
                           SwitchListTile(
                             title: const Text(
-                              "โปรโมชั่นพรีเมียม",
+                              "Premium Promotion",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             subtitle: const Text(
-                              "รายการของคุณจะได้รับการโปรโมทและมองเห็นได้มากขึ้น",
+                              "Your listing will be featured and get more visibility",
                               style: TextStyle(fontSize: 12),
                             ),
                             value: _isPremium,
@@ -1592,7 +1259,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                   ? const CircularProgressIndicator(
                                       color: Colors.white)
                                   : const Text(
-                                      "อัปเดตรายการ",
+                                      "Update Listing",
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,

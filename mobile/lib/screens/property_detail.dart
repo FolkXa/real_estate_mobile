@@ -25,6 +25,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   late Future<RealEstate?> _realEstateFuture;
   late Future<User?> _agentFuture;
   late Future<List<RealEstate>> _nearbyPropertiesFuture;
+  late bool _isFavorite = false;
 
   @override
   void initState() {
@@ -42,6 +43,19 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
             realEstate.province, realEstate.realEstateId);
       }
     });
+
+    _firebaseService.isFavorite(widget.realEstateId).then((value) {
+      setState(() {
+        _isFavorite = value;
+      });
+    });
+  }
+
+  void _toggleFavorite() {
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+    FirebaseService.toggleFavoriteInFirestore(widget.realEstateId);
   }
 
   void _contactAgent() {
@@ -105,27 +119,27 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                             Row(
                               children: [
                                 // Share Button
-                                Container(
-                                  margin: const EdgeInsets.only(right: 10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.9),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: IconButton(
-                                    icon: const Icon(Icons.share, size: 18),
-                                    onPressed: () {},
-                                  ),
-                                ),
+                                // Container(
+                                //   margin: const EdgeInsets.only(right: 10),
+                                //   decoration: BoxDecoration(
+                                //     color: Colors.white.withOpacity(0.9),
+                                //     shape: BoxShape.circle,
+                                //   ),
+                                //   child: IconButton(
+                                //     icon: const Icon(Icons.share, size: 18),
+                                //     onPressed: () {},
+                                //   ),
+                                // ),
                                 // Favorite Button
                                 Container(
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.accent,
+                                  decoration: BoxDecoration(
+                                    color: _isFavorite ? AppColors.accent: Colors.white,
                                     shape: BoxShape.circle,
                                   ),
                                   child: IconButton(
-                                    icon: const Icon(Icons.favorite,
-                                        color: Colors.white, size: 18),
-                                    onPressed: () {},
+                                    icon: Icon(Icons.favorite,
+                                        color: _isFavorite ? Colors.white : null, size: 18),
+                                    onPressed: () {_toggleFavorite();},
                                   ),
                                 ),
                               ],

@@ -246,6 +246,29 @@ class FirebaseService {
     }
   }
 
+  Future<bool> isFavorite(int realEstateId) async {
+    final userEmail = auth.FirebaseAuth.instance.currentUser?.email;
+
+    final userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: userEmail)
+        .limit(1)
+        .get();
+
+    if (userSnapshot.docs.isEmpty) return false;
+    final userId = userSnapshot.docs.first['user_id'];
+
+    final favoriteRef =
+        FirebaseFirestore.instance.collection('favorite_real_estate');
+
+    final existing = await favoriteRef
+        .where('user_id', isEqualTo: userId)
+        .where('real_estate_id', isEqualTo: realEstateId)
+        .get();
+
+    return existing.docs.isNotEmpty;
+  }
+
   Future<Set<int>> getFavoriteIds() async {
     final userEmail = auth.FirebaseAuth.instance.currentUser?.email;
 

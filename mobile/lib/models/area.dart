@@ -1,121 +1,41 @@
 class Area {
-  final double value;
-  final AreaUnit unit;
-
-  // Constants for conversion
-  static const double SQUARE_WA_TO_SQUARE_METER = 4.0;
-  static const double SQUARE_METER_TO_SQUARE_WA = 0.25;
+  final double rai;
+  final double squareWa;
+  final double squareMeter;
 
   Area({
-    required this.value,
-    required this.unit,
+    this.rai = 0,
+    this.squareWa = 0,
+    this.squareMeter = 0,
   });
-
-  // Create from square meters
-  factory Area.fromSquareMeters(double squareMeters) {
-    return Area(
-      value: squareMeters,
-      unit: AreaUnit.squareMeter,
-    );
-  }
 
   // Create from square wa
   factory Area.fromSquareWa(double squareWa) {
+    // 1 rai = 400 square wa
+    final rai = (squareWa / 400).floorToDouble();
+    final remainingSquareWa = (squareWa % 400).floorToDouble();
+    
+    // 1 square wa = 4 square meters
+    final squareMeter = squareWa % 1 * 4;
+
     return Area(
-      value: squareWa,
-      unit: AreaUnit.squareWa,
+      rai: rai,
+      squareWa: remainingSquareWa,
+      squareMeter: squareMeter,
     );
   }
 
-  // Create from database value with specified unit
-  factory Area.fromDatabase(dynamic areaValue, AreaUnit unit) {
-    if (areaValue == null) {
-      return Area(value: 0, unit: unit);
-    }
-    
-    double parsedValue;
-    if (areaValue is int) {
-      parsedValue = areaValue.toDouble();
-    } else if (areaValue is double) {
-      parsedValue = areaValue;
-    } else if (areaValue is String) {
-      parsedValue = double.tryParse(areaValue) ?? 0.0;
-    } else {
-      parsedValue = 0.0;
-    }
-    
-    return Area(value: parsedValue, unit: unit);
-  }
-
-  // Convert to square meters
-  double get inSquareMeters {
-    if (unit == AreaUnit.squareMeter) {
-      return value;
-    } else {
-      return value * SQUARE_WA_TO_SQUARE_METER;
-    }
-  }
-
-  // Convert to square wa
-  double get inSquareWa {
-    if (unit == AreaUnit.squareWa) {
-      return value;
-    } else {
-      return value * SQUARE_METER_TO_SQUARE_WA;
-    }
-  }
-
-  // Convert to the other unit
-  Area convertTo(AreaUnit targetUnit) {
-    if (unit == targetUnit) {
-      return this;
-    }
-    
-    if (targetUnit == AreaUnit.squareMeter) {
-      return Area(value: inSquareMeters, unit: AreaUnit.squareMeter);
-    } else {
-      return Area(value: inSquareWa, unit: AreaUnit.squareWa);
-    }
-  }
-
-  // Format for display with unit symbol
-  String format({int decimalPlaces = 0}) {
-    String formattedValue = value.toStringAsFixed(decimalPlaces);
-    
-    if (unit == AreaUnit.squareMeter) {
-      return '$formattedValue ตร.ม.';
-    } else {
-      return '$formattedValue ตร.ว.';
-    }
-  }
-
-  // Format for display with full unit name
-  String formatWithFullUnit({int decimalPlaces = 0}) {
-    String formattedValue = value.toStringAsFixed(decimalPlaces);
-    
-    if (unit == AreaUnit.squareMeter) {
-      return '$formattedValue ตารางเมตร';
-    } else {
-      return '$formattedValue ตารางวา';
-    }
-  }
-
-  // For comparison and equality checks
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is Area && 
-           other.inSquareMeters == inSquareMeters;
-  }
+  // Get total area in square wa
+  double get totalSquareWa => (rai * 400) + squareWa + (squareMeter / 4);
 
   @override
-  int get hashCode => value.hashCode ^ unit.hashCode;
-
-  @override
-  String toString() => format();
-}
-
-enum AreaUnit {
-  squareMeter, // ตารางเมตร (ตร.ม.)
-  squareWa,    // ตารางวา (ตร.ว.)
+  String toString() {
+    if (rai > 0) {
+      return '${rai.toStringAsFixed(0)} ไร่ ${squareWa.toStringAsFixed(2)} ตร.วา';
+    } else if (squareWa > 0) {
+      return '${squareWa.toStringAsFixed(2)} ตร.วา';
+    } else {
+      return '${squareMeter.toStringAsFixed(2)} ตร.ม.';
+    }
+  }
 }

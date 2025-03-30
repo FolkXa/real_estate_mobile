@@ -1,6 +1,8 @@
+import 'area.dart';
+
 class RealEstate {
   final bool active;
-  final int area;
+  final Area area;
   final String address;
   final String amphur;
   final int bathroom;
@@ -48,7 +50,7 @@ class RealEstate {
   factory RealEstate.fromMap(Map<String, dynamic> map) {
     return RealEstate(
       active: map['active'] ?? false,
-      area: map['area'] ?? 0,
+      area: Area.fromSquareWa((map['area'] as num?)?.toDouble() ?? 0.0),
       address: map['address'] ?? '',
       amphur: map['amphur'] ?? '',
       bathroom: map['bathroom'] ?? 0,

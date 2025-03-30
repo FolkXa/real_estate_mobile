@@ -4,17 +4,16 @@ import '../models/real_estate.dart';
 import '../models/user.dart';
 import '../services/firebase_service.dart';
 import '../utils/formatters.dart';
-import 'edit_listing.dart';
 import 'property_detail.dart';
 
-class MyListingsScreen extends StatefulWidget {
-  const MyListingsScreen({Key? key}) : super(key: key);
+class MyEstatesScreen extends StatefulWidget {
+  const MyEstatesScreen({Key? key}) : super(key: key);
 
   @override
   _MyListingsScreenState createState() => _MyListingsScreenState();
 }
 
-class _MyListingsScreenState extends State<MyListingsScreen> {
+class _MyListingsScreenState extends State<MyEstatesScreen> {
   final FirebaseService _firebaseService = FirebaseService();
   final auth.FirebaseAuth _auth = auth.FirebaseAuth.instance;
   late Future<List<RealEstate>> _myListingsFuture;
@@ -34,19 +33,10 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
       _userFuture.then((user) {
         if (user != null) {
           _myListingsFuture =
-              _firebaseService.getRealEstateByWorkerService(user.userId);
+              _firebaseService.getRealEstateByUserId(user.userId);
         }
       });
     }
-  }
-
-  void _navigateToCreateListing() {
-    Navigator.pushNamed(context, '/create-listing').then((_) {
-      // Refresh the listings when returning from create screen
-      setState(() {
-        _loadData();
-      });
-    });
   }
 
   @override
@@ -57,7 +47,7 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
-          "My Listing",
+          "My List Real estate Sell",
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.bold,
@@ -76,15 +66,6 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
               !userSnapshot.hasData ||
               userSnapshot.data == null) {
             return const Center(child: Text('Unable to load user data'));
-          }
-
-          final user = userSnapshot.data!;
-
-          // Only workers should see this screen
-          if (user.role != 'worker') {
-            return const Center(
-              child: Text('You do not have permission to access this page'),
-            );
           }
 
           return FutureBuilder<List<RealEstate>>(
@@ -116,20 +97,6 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
                             color: Colors.black87,
                           ),
                         ),
-                        ElevatedButton.icon(
-                          onPressed: _navigateToCreateListing,
-                          icon: const Icon(Icons.add),
-                          label: const Text("Create new sell"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                          ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -137,7 +104,7 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
                       child: listings.isEmpty
                           ? const Center(
                               child: Text(
-                                'No listings yet. Create your first listing!',
+                                'You have no estates',
                                 style: TextStyle(fontSize: 16),
                               ),
                             )
@@ -335,77 +302,6 @@ class PropertyListingCard extends StatelessWidget {
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Action buttons
-          Padding(
-            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditListingScreen(
-                            realEstateId: property.realEstateId,
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.edit, size: 16),
-                    label: const Text("Edit"),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.blue,
-                      side: const BorderSide(color: Colors.blue),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      // Implement delete functionality
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text("Delete Listing"),
-                          content: const Text(
-                              "Are you sure you want to delete this listing?"),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text("Cancel"),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                // Implement delete
-                                Navigator.pop(context);
-                              },
-                              child: const Text("Delete",
-                                  style: TextStyle(color: Colors.red)),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.delete, size: 16),
-                    label: const Text("Delete"),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
                     ),
                   ),
                 ),

@@ -63,6 +63,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '266614568627',
     projectId: 'pj-realestate',
     storageBucket: 'pj-realestate.firebasestorage.app',
+    iosClientId: '266614568627-dub1cameflkqknd55a7floca7qmv7grb.apps.googleusercontent.com',
     iosBundleId: 'com.example.realEstateProject',
   );
 }

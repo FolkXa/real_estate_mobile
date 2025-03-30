@@ -730,7 +730,7 @@ class CustomDrawer extends StatelessWidget {
                 leading: Icon(Icons.home),
                 title: Text(role == 'worker' ? 'My List' : 'My Real Estate'),
                 onTap: () {
-                  Navigator.pushNamed(context, '/my-listings');
+                  Navigator.pushNamed(context, role == 'worker' ? '/my-listings' : '/my-estates');
                 },
               ),
               ListTile(
