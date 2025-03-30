@@ -4,6 +4,7 @@ import '../models/real_estate.dart';
 import '../models/user.dart';
 import '../services/firebase_service.dart';
 import '../utils/formatters.dart';
+import 'create_listing.dart';
 import 'edit_listing.dart';
 import 'property_detail.dart';
 
@@ -41,7 +42,10 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
   }
 
   void _navigateToCreateListing() {
-    Navigator.pushNamed(context, '/create-listing').then((_) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CreateListingScreen()),
+    ).then((_) {
       // Refresh the listings when returning from create screen
       setState(() {
         _loadData();
@@ -52,14 +56,16 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           "My Listing",
           style: TextStyle(
-            color: Colors.black87,
+            color: Theme.of(context).brightness == Brightness.light 
+                ? Colors.black87 
+                : Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -109,11 +115,13 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "${listings.length} estates",
-                          style: const TextStyle(
+                          "${listings.length} Estates",
+                          style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: Theme.of(context).brightness == Brightness.light 
+                                ? Colors.black87 
+                                : Colors.white,
                           ),
                         ),
                         ElevatedButton.icon(
@@ -135,10 +143,15 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
                     const SizedBox(height: 16),
                     Expanded(
                       child: listings.isEmpty
-                          ? const Center(
+                          ? Center(
                               child: Text(
                                 'No listings yet. Create your first listing!',
-                                style: TextStyle(fontSize: 16),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Theme.of(context).brightness == Brightness.light 
+                                      ? Colors.black87 
+                                      : Colors.white70,
+                                ),
                               ),
                             )
                           : ListView.builder(
@@ -189,14 +202,16 @@ class PropertyListingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -287,9 +302,10 @@ class PropertyListingCard extends StatelessWidget {
                       children: [
                         Text(
                           property.details,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black87,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -302,22 +318,25 @@ class PropertyListingCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               (property.view).toString(),
-                              style: const TextStyle(fontSize: 14),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDarkMode ? Colors.white70 : Colors.black87,
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.location_on,
-                                color: Colors.grey, size: 16),
+                            Icon(Icons.location_on,
+                                color: isDarkMode ? Colors.grey[400] : Colors.grey, size: 16),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
                                 "${property.address} ${property.amphur} ${property.tambon} ${property.province}",
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.grey,
+                                  color: isDarkMode ? Colors.grey[400] : Colors.grey,
                                 ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -328,10 +347,10 @@ class PropertyListingCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           "\฿ ${Formatters.formatCurrency(property.price)}",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.indigo,
+                            color: isDarkMode ? Colors.yellow : Colors.indigo,
                           ),
                         ),
                       ],
@@ -417,3 +436,4 @@ class PropertyListingCard extends StatelessWidget {
     );
   }
 }
+

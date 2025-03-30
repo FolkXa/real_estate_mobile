@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:real_estate_project/screens/property_detail.dart';
-import 'package:real_estate_project/RealEstateCard.dart';
+import 'package:real_estate_project/widgets/RealEstateCard.dart';
 import 'package:real_estate_project/services/firebase_service.dart';
 
 class AgentProfileScreen extends StatelessWidget {
@@ -19,7 +19,7 @@ class AgentProfileScreen extends StatelessWidget {
     String imagePath = agent['image_path'];
 
     return Scaffold(
-      appBar: AppBar(title: Text('Agent: $nickname')),
+      appBar: AppBar(title: Text('Agent')),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -35,25 +35,56 @@ class AgentProfileScreen extends StatelessWidget {
             ),
             SizedBox(height: 10),
             Text(nickname,
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+                )),
             Text(fullName,
-                style: TextStyle(fontSize: 18, color: Colors.grey[700])),
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white70
+                      : Colors.grey[800],
+                )),
             SizedBox(height: 6),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.phone, size: 16, color: Colors.grey),
+                Icon(Icons.phone,
+                    size: 16,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white70
+                        : Colors.grey),
                 SizedBox(width: 6),
-                Text(phone, style: TextStyle(fontSize: 14)),
+                Text(phone,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                    )),
               ],
             ),
             SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.email, size: 16, color: Colors.grey),
+                Icon(Icons.email,
+                    size: 16,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white70
+                        : Colors.grey),
                 SizedBox(width: 6),
-                Text(email, style: TextStyle(fontSize: 14)),
+                Text(email,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                    )),
               ],
             ),
             SizedBox(height: 24),
@@ -121,17 +152,12 @@ class AgentProfileScreen extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 6.0),
                   child: RealEstateCard(
-                    realEstateId: realEstateId,
-                    imagePath: imageUrl,
-                    price: price,
-                    name: name,
-                    location: location,
-                    sellType: sellType,
-                    isInitiallyFavorite:
-                        false, // คุณอาจปรับตรงนี้ถ้ามีข้อมูล favorite
-                    onToggleFavorite: FirebaseService
-                        .toggleFavoriteInFirestore, // หรือเพิ่มฟังก์ชัน toggle ถ้ามี
-                  ),
+                      realEstateId: realEstateId,
+                      imagePath: imageUrl,
+                      price: price,
+                      name: name,
+                      location: location,
+                      sellType: sellType),
                 );
               },
             );

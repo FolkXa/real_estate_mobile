@@ -22,6 +22,8 @@ class RealEstate {
   final int view;
   final int workerService;
   final List<String> images;
+  final double latitude;
+  final double longitude;
 
   RealEstate({
     required this.active,
@@ -45,6 +47,8 @@ class RealEstate {
     required this.view,
     required this.workerService,
     required this.images,
+    required this.latitude,
+    required this.longitude,
   });
 
   factory RealEstate.fromMap(Map<String, dynamic> map) {
@@ -70,6 +74,8 @@ class RealEstate {
       view: map['view'] ?? 0,
       workerService: map['worker_service'] ?? 0,
       images: List<String>.from(map['images'] ?? []),
+      latitude: (map['latitude'] ?? 0).toDouble(),
+      longitude: (map['longitude'] ?? 0).toDouble(),
     );
   }
 }

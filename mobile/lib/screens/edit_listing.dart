@@ -27,6 +27,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
   final auth.FirebaseAuth _auth = auth.FirebaseAuth.instance;
 
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _latitudeController = TextEditingController();
+  final TextEditingController _longitudeController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _provinceController = TextEditingController();
   final TextEditingController _amphurController = TextEditingController();
@@ -36,8 +38,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
   
   // Area controllers
   final TextEditingController _raiController = TextEditingController();
-  final TextEditingController _squareWaController = TextEditingController();
-  final TextEditingController _squareMeterController = TextEditingController();
+  final TextEditingController _nganController = TextEditingController();
+  final TextEditingController _waController = TextEditingController();
   
   final TextEditingController _bedroomController = TextEditingController();
   final TextEditingController _bathroomController = TextEditingController();
@@ -61,6 +63,17 @@ class _EditListingScreenState extends State<EditListingScreen> {
   int _ownerId = 0;
   String _docId = '';
   ThailandDivision? _thailandDivision;
+
+  // Location search
+  bool _isSearchingProvince = false;
+  bool _isSearchingAmphur = false;
+  bool _isSearchingTambon = false;
+  List<Map<String, dynamic>> _provinceResults = [];
+  List<Map<String, dynamic>> _amphurResults = [];
+  List<Map<String, dynamic>> _tambonResults = [];
+  Map<String, dynamic>? _selectedProvince;
+  Map<String, dynamic>? _selectedAmphur;
+  Map<String, dynamic>? _selectedTambon;
 
   final List<String> _estateTypes = [
     'คอนโด',
@@ -86,21 +99,19 @@ class _EditListingScreenState extends State<EditListingScreen> {
   void _convertAreaToThaiUnits(Area area) {
     // Set the values to controllers
     _raiController.text = area.rai.toString();
-    _squareWaController.text = area.squareWa.toString();
-    _squareMeterController.text = area.squareMeter.toString();
+    _nganController.text = area.ngan.toString();
+    _waController.text = area.wa.toString();
   }
 
   // Calculate total area in square wa
   double _calculateTotalAreaInSquareWa() {
     try {
       double rai = double.tryParse(_raiController.text.replaceAll(',', '')) ?? 0;
-      double squareWa = double.tryParse(_squareWaController.text.replaceAll(',', '')) ?? 0;
-      double squareMeter = double.tryParse(_squareMeterController.text.replaceAll(',', '')) ?? 0;
+      double ngan = double.tryParse(_nganController.text.replaceAll(',', '')) ?? 0;
+      double wa = double.tryParse(_waController.text.replaceAll(',', '')) ?? 0;
       
       // Convert all to square wa
-      Area area = Area(rai: rai, squareWa: squareWa, squareMeter: squareMeter);
-      
-      return area.totalSquareWa;
+      return (rai * 400) + (ngan * 100) + wa;
     } catch (e) {
       print('Error calculating area: $e');
       return 0;
@@ -117,6 +128,10 @@ class _EditListingScreenState extends State<EditListingScreen> {
           _currentUser = user;
         });
       }
+
+      // Load Thailand division data
+      await _loadThailandDivision();
+      
       // Load property data
       final property =
           await _firebaseService.getRealEstateById(widget.realEstateId);
@@ -161,10 +176,9 @@ class _EditListingScreenState extends State<EditListingScreen> {
       // Load workers
       await _loadWorkerService();
 
-      await _loadThailandDivision();
-
       // Convert area to Thai units
-      _convertAreaToThaiUnits(property.area);
+      Area area = property.area;
+      _convertAreaToThaiUnits(area);
       
       // Populate form fields
       _nameController.text = property.name;
@@ -176,6 +190,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
       _priceController.text = property.price.toString();
       _bedroomController.text = property.bedroom.toString();
       _bathroomController.text = property.bathroom.toString();
+      _latitudeController.text = property.latitude.toString();
+      _longitudeController.text = property.longitude.toString();
+
+      // Find and set the selected province, amphur, and tambon
+      _setInitialLocationData(property.province, property.amphur, property.tambon);
 
       setState(() {
         _selectedType = property.typeRealestate;
@@ -199,6 +218,42 @@ class _EditListingScreenState extends State<EditListingScreen> {
         _isInitialLoading = false;
       });
       print('Error loading property data: $e');
+    }
+  }
+
+  void _setInitialLocationData(String province, String amphur, String tambon) {
+    if (_thailandDivision == null) return;
+
+    try {
+      // Find province
+      final provinceMatch = _thailandDivision!.provinces.firstWhere(
+        (p) => p['name_th'] == province,
+        orElse: () => {},
+      );
+      
+      if (provinceMatch.isNotEmpty) {
+        _selectedProvince = provinceMatch;
+        
+        // Find amphur
+        final amphurMatches = _thailandDivision!.amphures.where(
+          (a) => a['province_id'] == provinceMatch['id'] && a['name_th'] == amphur
+        ).toList();
+        
+        if (amphurMatches.isNotEmpty) {
+          _selectedAmphur = amphurMatches.first;
+          
+          // Find tambon
+          final tambonMatches = _thailandDivision!.tambons.where(
+            (t) => t['amphure_id'] == _selectedAmphur!['id'] && t['name_th'] == tambon
+          ).toList();
+          
+          if (tambonMatches.isNotEmpty) {
+            _selectedTambon = tambonMatches.first;
+          }
+        }
+      }
+    } catch (e) {
+      print('Error setting initial location data: $e');
     }
   }
 
@@ -266,6 +321,110 @@ class _EditListingScreenState extends State<EditListingScreen> {
     } catch (e) {
       print('Error loading workers: $e');
     }
+  }
+
+  // Search functions for location
+  void _searchProvinces(String query) {
+    if (_thailandDivision == null) return;
+    
+    setState(() {
+      _isSearchingProvince = true;
+    });
+    
+    try {
+      final results = _thailandDivision!.searchProvince(query);
+      setState(() {
+        _provinceResults = results;
+        _isSearchingProvince = false;
+      });
+    } catch (e) {
+      print('Error searching provinces: $e');
+      setState(() {
+        _isSearchingProvince = false;
+      });
+    }
+  }
+
+  void _searchAmphures(String query) {
+    if (_thailandDivision == null || _selectedProvince == null) return;
+    
+    setState(() {
+      _isSearchingAmphur = true;
+    });
+    
+    try {
+      final results = _thailandDivision!.searchAmphure(query).where(
+        (amphur) => amphur['province_id'] == _selectedProvince!['id']
+      ).toList();
+      
+      setState(() {
+        _amphurResults = results;
+        _isSearchingAmphur = false;
+      });
+    } catch (e) {
+      print('Error searching amphures: $e');
+      setState(() {
+        _isSearchingAmphur = false;
+      });
+    }
+  }
+
+  void _searchTambons(String query) {
+    if (_thailandDivision == null || _selectedAmphur == null) return;
+    
+    setState(() {
+      _isSearchingTambon = true;
+    });
+    
+    try {
+      final results = _thailandDivision!.searchTambon(query).where(
+        (tambon) => tambon['amphure_id'] == _selectedAmphur!['id']
+      ).toList();
+      
+      setState(() {
+        _tambonResults = results;
+        _isSearchingTambon = false;
+      });
+    } catch (e) {
+      print('Error searching tambons: $e');
+      setState(() {
+        _isSearchingTambon = false;
+      });
+    }
+  }
+
+  void _selectProvince(Map<String, dynamic> province) {
+    setState(() {
+      _selectedProvince = province;
+      _provinceController.text = province['name_th'];
+      _provinceResults = [];
+      
+      // Reset amphur and tambon when province changes
+      _selectedAmphur = null;
+      _selectedTambon = null;
+      _amphurController.text = '';
+      _tambonController.text = '';
+    });
+  }
+
+  void _selectAmphur(Map<String, dynamic> amphur) {
+    setState(() {
+      _selectedAmphur = amphur;
+      _amphurController.text = amphur['name_th'];
+      _amphurResults = [];
+      
+      // Reset tambon when amphur changes
+      _selectedTambon = null;
+      _tambonController.text = '';
+    });
+  }
+
+  void _selectTambon(Map<String, dynamic> tambon) {
+    setState(() {
+      _selectedTambon = tambon;
+      _tambonController.text = tambon['name_th'];
+      _tambonResults = [];
+    });
   }
 
   Future<void> _searchUsersByEmail(String email) async {
@@ -456,30 +615,55 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
   bool _validateAreaFields() {
     // Validate rai (max 4 characters)
-    // if (_raiController.text.length > 4) {
-    //   setState(() {
-    //     _errorMessage = 'จำนวนไร่ต้องไม่เกิน 4 หลัก';
-    //   });
-    //   return false;
-    // }
+    if (_raiController.text.isNotEmpty && _raiController.text.length > 4) {
+      setState(() {
+        _errorMessage = 'จำนวนไร่ต้องไม่เกิน 4 หลัก';
+      });
+      return false;
+    }
     
-    // // Validate square wa (0-399)
-    // int squareWa = int.tryParse(_squareWaController.text) ?? 0;
-    // if (squareWa < 0 || squareWa >= 400) {
-    //   setState(() {
-    //     _errorMessage = 'ตารางวาต้องอยู่ระหว่าง 0-399';
-    //   });
-    //   return false;
-    // }
+    // Validate ngan (0-3)
+    int ngan = int.tryParse(_nganController.text) ?? 0;
+    if (ngan < 0 || ngan >= 4) {
+      setState(() {
+        _errorMessage = 'งานต้องอยู่ระหว่าง 0-3';
+      });
+      return false;
+    }
     
-    // // Validate square meter (0-3)
-    // int squareMeter = int.tryParse(_squareMeterController.text) ?? 0;
-    // if (squareMeter < 0 || squareMeter >= 4) {
-    //   setState(() {
-    //     _errorMessage = 'ตารางเมตรต้องอยู่ระหว่าง 0-3';
-    //   });
-    //   return false;
-    // }
+    // Validate wa (0-99)
+    int wa = int.tryParse(_waController.text) ?? 0;
+    if (wa < 0 || wa >= 100) {
+      setState(() {
+        _errorMessage = 'ตารางวาต้องอยู่ระหว่าง 0-99';
+      });
+      return false;
+    }
+    
+    return true;
+  }
+
+  bool _validateLocationFields() {
+    if (_selectedProvince == null) {
+      setState(() {
+        _errorMessage = 'กรุณาเลือกจังหวัด';
+      });
+      return false;
+    }
+    
+    if (_selectedAmphur == null) {
+      setState(() {
+        _errorMessage = 'กรุณาเลือกอำเภอ/เขต';
+      });
+      return false;
+    }
+    
+    if (_selectedTambon == null) {
+      setState(() {
+        _errorMessage = 'กรุณาเลือกตำบล/แขวง';
+      });
+      return false;
+    }
     
     return true;
   }
@@ -500,10 +684,12 @@ class _EditListingScreenState extends State<EditListingScreen> {
         _detailsController.text.isEmpty ||
         _priceController.text.isEmpty ||
         (_raiController.text.isEmpty && 
-         _squareWaController.text.isEmpty && 
-         _squareMeterController.text.isEmpty) ||
+         _nganController.text.isEmpty && 
+         _waController.text.isEmpty) ||
         _bedroomController.text.isEmpty ||
-        _bathroomController.text.isEmpty) {
+        _bathroomController.text.isEmpty ||
+        _latitudeController.text.isEmpty ||
+        _longitudeController.text.isEmpty) {
       setState(() {
         _errorMessage = 'กรุณากรอกข้อมูลให้ครบทุกช่อง';
       });
@@ -519,6 +705,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
     // Validate area fields
     if (!_validateAreaFields()) {
+      return;
+    }
+
+    // Validate location fields
+    if (!_validateLocationFields()) {
       return;
     }
 
@@ -567,6 +758,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
           'type_sell': _selectedSellType,
           'worker_service': _workerService,
           'user_id': _ownerId,
+          'latitude': double.parse(_latitudeController.text),
+          'longitude': double.parse(_longitudeController.text),
         });
       } else {
         setState(() {
@@ -633,20 +826,20 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                _currentUser!.userId == _workerService;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           "Edit My Listing",
           style: TextStyle(
-            color: Colors.black87,
+            color: Theme.of(context).colorScheme.onBackground,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onBackground),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -668,20 +861,19 @@ class _EditListingScreenState extends State<EditListingScreen> {
                               padding: const EdgeInsets.all(12),
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color: Colors.red.shade50,
+                                color: Theme.of(context).colorScheme.error.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.red.shade200),
+                                border: Border.all(color: Theme.of(context).colorScheme.error.withOpacity(0.3)),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.error_outline,
-                                      color: Colors.red.shade700),
+                                  Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
                                       _errorMessage,
                                       style:
-                                          TextStyle(color: Colors.red.shade700),
+                                          TextStyle(color: Theme.of(context).colorScheme.error),
                                     ),
                                   ),
                                 ],
@@ -700,7 +892,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           Container(
                             height: 120,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.background,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: Colors.grey.shade300),
                             ),
@@ -713,10 +905,10 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     width: 100,
                                     margin: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey.shade100,
+                                      color: Theme.of(context).colorScheme.surfaceVariant,
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
-                                          color: Colors.grey.shade300),
+                                          color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                                     ),
                                     child: const Column(
                                       mainAxisAlignment:
@@ -897,16 +1089,14 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             decoration: InputDecoration(
                               hintText: "เช่น บ้านเดี่ยว 100 ตรว. เขตห้วยขวาง",
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: Theme.of(context).colorScheme.surface,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide:
-                                    BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide:
-                                    BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                               ),
                             ),
                           ),
@@ -925,9 +1115,9 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.grey.shade300),
+                              border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
@@ -964,9 +1154,9 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.grey.shade300),
+                              border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
@@ -991,7 +1181,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
                           const SizedBox(height: 16),
 
-                          // Area Fields (Rai, Square Wa, Square Meter)
+                          // Area Fields (Rai, Ngan, Wa)
                           const Text(
                             "พื้นที่",
                             style: TextStyle(
@@ -1022,15 +1212,15 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       decoration: InputDecoration(
                                         hintText: "ไร่",
                                         filled: true,
-                                        fillColor: Colors.white,
+                                        fillColor: Theme.of(context).colorScheme.surface,
                                         counterText: "",
                                         border: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                                         ),
                                         enabledBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                                         ),
                                       ),
                                     ),
@@ -1038,7 +1228,41 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              // Square Wa
+                              // Ngan
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "งาน",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    TextFormField(
+                                      controller: _nganController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        hintText: "งาน",
+                                        filled: true,
+                                        fillColor: Theme.of(context).colorScheme.surface,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Wa
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1052,53 +1276,19 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     TextFormField(
-                                      controller: _squareWaController,
+                                      controller: _waController,
                                       keyboardType: TextInputType.number,
                                       decoration: InputDecoration(
                                         hintText: "ตารางวา",
                                         filled: true,
-                                        fillColor: Colors.white,
+                                        fillColor: Theme.of(context).colorScheme.surface,
                                         border: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                                         ),
                                         enabledBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Square Meter
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "ตารางเมตร",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    TextFormField(
-                                      controller: _squareMeterController,
-                                      keyboardType: TextInputType.number,
-                                      decoration: InputDecoration(
-                                        hintText: "ตารางเมตร",
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                                         ),
                                       ),
                                     ),
@@ -1140,14 +1330,14 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       decoration: InputDecoration(
                                         hintText: "จำนวนห้องนอน",
                                         filled: true,
-                                        fillColor: Colors.white,
+                                        fillColor: Theme.of(context).colorScheme.surface,
                                         border: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                                         ),
                                         enabledBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                                         ),
                                       ),
                                     ),
@@ -1173,10 +1363,88 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       decoration: InputDecoration(
                                         hintText: "จำนวนห้องน้ำ",
                                         filled: true,
-                                        fillColor: Colors.white,
+                                        fillColor: Theme.of(context).colorScheme.surface,
                                         border: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 16),
+                          // lat long
+                          Row(
+                            children: [
+                              // Latitude
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "ละติจูด",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    TextFormField(
+                                      controller: _latitudeController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        hintText: "ละติจูด",
+                                        filled: true,
+                                        fillColor: Theme.of(context).colorScheme.surface,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Longitude
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "ลองติจูด",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    TextFormField(
+                                      controller: _longitudeController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        hintText: "ลองติจูด",
+                                        filled: true,
+                                        fillColor: Theme.of(context).colorScheme.surface,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                                         ),
                                       ),
                                     ),
@@ -1202,92 +1470,188 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             decoration: InputDecoration(
                               hintText: "บ้านเลขที่ ถนน ซอย",
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: Theme.of(context).colorScheme.surface,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                               ),
                             ),
                           ),
 
                           const SizedBox(height: 16),
 
-                          // Location details (Province, Amphur, Tambon)
-                          Row(
+                          // Province (with search)
+                          const Text(
+                            "จังหวัด",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Column(
                             children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "จังหวัด",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    TextFormField(
-                                      controller: _provinceController,
-                                      decoration: InputDecoration(
-                                        hintText: "จังหวัด",
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                              TextFormField(
+                                controller: _provinceController,
+                                decoration: InputDecoration(
+                                  hintText: "ค้นหาจังหวัด",
+                                  filled: true,
+                                  fillColor: Theme.of(context).colorScheme.surface,
+                                  prefixIcon: const Icon(Icons.search),
+                                  suffixIcon: _provinceController.text.isNotEmpty
+                                      ? IconButton(
+                                          icon: const Icon(Icons.clear),
+                                          onPressed: () {
+                                            setState(() {
+                                              _provinceController.clear();
+                                              _provinceResults = [];
+                                              _selectedProvince = null;
+                                            });
+                                          },
+                                        )
+                                      : null,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                  ),
                                 ),
+                                onChanged: (value) {
+                                  if (value.length >= 2) {
+                                    _searchProvinces(value);
+                                  } else if (value.isEmpty) {
+                                    setState(() {
+                                      _provinceResults = [];
+                                    });
+                                  }
+                                },
+                                readOnly: _selectedProvince != null,
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "อำเภอ/เขต",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    TextFormField(
-                                      controller: _amphurController,
-                                      decoration: InputDecoration(
-                                        hintText: "อำเภอ/เขต",
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                              if (_isSearchingProvince)
+                                const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Center(child: CircularProgressIndicator()),
                                 ),
-                              ),
+                              if (_provinceResults.isNotEmpty)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  constraints: BoxConstraints(
+                                    maxHeight: 200,
+                                  ),
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: _provinceResults.length,
+                                    itemBuilder: (context, index) {
+                                      final province = _provinceResults[index];
+                                      return ListTile(
+                                        title: Text(province['name_th']),
+                                        onTap: () => _selectProvince(province),
+                                      );
+                                    },
+                                  ),
+                                ),
                             ],
                           ),
 
                           const SizedBox(height: 16),
 
-                          // Tambon (Sub-district)
+                          // Amphur (with search)
+                          const Text(
+                            "อำเภอ/เขต",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Column(
+                            children: [
+                              TextFormField(
+                                controller: _amphurController,
+                                decoration: InputDecoration(
+                                  hintText: "ค้นหาอำเภอ/เขต",
+                                  filled: true,
+                                  fillColor: Theme.of(context).colorScheme.surface,
+                                  prefixIcon: const Icon(Icons.search),
+                                  suffixIcon: _amphurController.text.isNotEmpty
+                                      ? IconButton(
+                                          icon: const Icon(Icons.clear),
+                                          onPressed: () {
+                                            setState(() {
+                                              _amphurController.clear();
+                                              _amphurResults = [];
+                                              _selectedAmphur = null;
+                                            });
+                                          },
+                                        )
+                                      : null,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  if (_selectedProvince != null && value.length >= 2) {
+                                    _searchAmphures(value);
+                                  } else if (value.isEmpty) {
+                                    setState(() {
+                                      _amphurResults = [];
+                                    });
+                                  }
+                                },
+                                readOnly: _selectedProvince == null || _selectedAmphur != null,
+                                enabled: _selectedProvince != null,
+                              ),
+                              if (_isSearchingAmphur)
+                                const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Center(child: CircularProgressIndicator()),
+                                ),
+                              if (_amphurResults.isNotEmpty)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  constraints: BoxConstraints(
+                                    maxHeight: 200,
+                                  ),
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: _amphurResults.length,
+                                    itemBuilder: (context, index) {
+                                      final amphur = _amphurResults[index];
+                                      return ListTile(
+                                        title: Text(amphur['name_th']),
+                                        onTap: () => _selectAmphur(amphur),
+                                      );
+                                    },
+                                  ),
+                                ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Tambon (with search)
                           const Text(
                             "ตำบล/แขวง",
                             style: TextStyle(
@@ -1296,21 +1660,77 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _tambonController,
-                            decoration: InputDecoration(
-                              hintText: "ตำบล/แขวง",
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                          Column(
+                            children: [
+                              TextFormField(
+                                controller: _tambonController,
+                                decoration: InputDecoration(
+                                  hintText: "ค้นหาตำบล/แขวง",
+                                  filled: true,
+                                  fillColor: Theme.of(context).colorScheme.surface,
+                                  prefixIcon: const Icon(Icons.search),
+                                  suffixIcon: _tambonController.text.isNotEmpty
+                                      ? IconButton(
+                                          icon: const Icon(Icons.clear),
+                                          onPressed: () {
+                                            setState(() {
+                                              _tambonController.clear();
+                                              _tambonResults = [];
+                                              _selectedTambon = null;
+                                            });
+                                          },
+                                        )
+                                      : null,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  if (_selectedAmphur != null && value.length >= 2) {
+                                    _searchTambons(value);
+                                  } else if (value.isEmpty) {
+                                    setState(() {
+                                      _tambonResults = [];
+                                    });
+                                  }
+                                },
+                                readOnly: _selectedAmphur == null || _selectedTambon != null,
+                                enabled: _selectedAmphur != null,
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
-                              ),
-                            ),
+                              if (_isSearchingTambon)
+                                const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Center(child: CircularProgressIndicator()),
+                                ),
+                              if (_tambonResults.isNotEmpty)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  constraints: BoxConstraints(
+                                    maxHeight: 200,
+                                  ),
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: _tambonResults.length,
+                                    itemBuilder: (context, index) {
+                                      final tambon = _tambonResults[index];
+                                      return ListTile(
+                                        title: Text(tambon['name_th']),
+                                        onTap: () => _selectTambon(tambon),
+                                      );
+                                    },
+                                  ),
+                                ),
+                            ],
                           ),
 
                           const SizedBox(height: 16),
@@ -1331,14 +1751,14 @@ class _EditListingScreenState extends State<EditListingScreen> {
                               hintText: "ราคา (บาท)",
                               prefixText: "฿ ",
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: Theme.of(context).colorScheme.surface,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                               ),
                             ),
                           ),
@@ -1361,7 +1781,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                 decoration: InputDecoration(
                                   hintText: "ค้นหาผู้ใช้ด้วยอีเมล",
                                   filled: true,
-                                  fillColor: Colors.white,
+                                  fillColor: Theme.of(context).colorScheme.surface,
                                   prefixIcon: const Icon(Icons.search),
                                   suffixIcon: _searchUserController.text.isNotEmpty
                                       ? IconButton(
@@ -1376,11 +1796,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       : null,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey.shade300),
+                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey.shade300),
+                                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                                   ),
                                 ),
                                 onChanged: (value) {
@@ -1446,16 +1866,16 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                       horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? Colors.blue
-                                        : Colors.grey.shade200,
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.surfaceVariant,
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
                                     entry.value,
                                     style: TextStyle(
                                       color: isSelected
-                                          ? Colors.white
-                                          : Colors.black87,
+                                          ? Theme.of(context).colorScheme.onPrimary
+                                          : Theme.of(context).colorScheme.onSurfaceVariant,
                                       fontWeight: isSelected
                                           ? FontWeight.bold
                                           : FontWeight.normal,
@@ -1483,14 +1903,14 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             decoration: InputDecoration(
                               hintText: "อธิบายรายละเอียดอสังหาริมทรัพย์...",
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: Theme.of(context).colorScheme.surface,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
                               ),
                             ),
                           ),
@@ -1509,7 +1929,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: Colors.grey.shade300),
                             ),
@@ -1520,7 +1940,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                 items: _workers.map((User? worker) {
                                   return DropdownMenuItem<int>(
                                     value: worker!.userId,
-                                    child: Text(worker.email),
+                                    child: Text(worker.email, style: TextStyle(color: Theme.of(context).focusColor,)),
                                   );
                                 }).toList(),
                                 onChanged: disableWorkerService 
@@ -1542,7 +1962,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                                 "* คุณไม่สามารถเปลี่ยนพนักงานดูแลได้เนื่องจากคุณเป็นพนักงานดูแลรายการนี้",
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey.shade600,
+                                  color: Theme.of(context).focusColor,
                                   fontStyle: FontStyle.italic,
                                 ),
                               ),
@@ -1582,15 +2002,15 @@ class _EditListingScreenState extends State<EditListingScreen> {
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _updateListing,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
+                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                               child: _isLoading
-                                  ? const CircularProgressIndicator(
-                                      color: Colors.white)
+                                  ? CircularProgressIndicator(
+                                      color: Theme.of(context).colorScheme.onPrimary)
                                   : const Text(
                                       "อัปเดตรายการ",
                                       style: TextStyle(

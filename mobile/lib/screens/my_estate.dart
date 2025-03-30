@@ -42,14 +42,16 @@ class _MyListingsScreenState extends State<MyEstatesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           "My List Real estate Sell",
           style: TextStyle(
-            color: Colors.black87,
+            color: Theme.of(context).brightness == Brightness.light 
+                ? Colors.black87 
+                : Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -91,10 +93,12 @@ class _MyListingsScreenState extends State<MyEstatesScreen> {
                       children: [
                         Text(
                           "${listings.length} estates",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: Theme.of(context).brightness == Brightness.light 
+                                ? Colors.black87 
+                                : Colors.white,
                           ),
                         ),
                       ],
@@ -102,10 +106,15 @@ class _MyListingsScreenState extends State<MyEstatesScreen> {
                     const SizedBox(height: 16),
                     Expanded(
                       child: listings.isEmpty
-                          ? const Center(
+                          ? Center(
                               child: Text(
                                 'You have no estates',
-                                style: TextStyle(fontSize: 16),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Theme.of(context).brightness == Brightness.light 
+                                      ? Colors.black87 
+                                      : Colors.white70,
+                                ),
                               ),
                             )
                           : ListView.builder(
@@ -156,14 +165,15 @@ class PropertyListingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),

@@ -43,8 +43,18 @@ class UserService {
           .get();
 
       if (docRef.docs.isNotEmpty) {
-        await docRef.docs.first.reference.update(data);
-        cachedUserData = data;
+        final sanitizedData = data.map((key, value) {
+          if (key == 'user_id') {
+            return MapEntry(key, int.tryParse(value.toString()) ?? 0);
+          } else if (key == 'active') {
+            return MapEntry(key, value == 'true' || value == true);
+          } else {
+            return MapEntry(key, value);
+          }
+        });
+
+        await docRef.docs.first.reference.update(sanitizedData);
+        cachedUserData = sanitizedData;
       }
     }
   }

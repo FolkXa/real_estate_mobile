@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:real_estate_project/CameraScreen.dart';
+import 'package:real_estate_project/screens/CameraScreen.dart';
 import 'package:real_estate_project/services/user_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/widgets.dart';
@@ -139,8 +139,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       isEditing = false;
     });
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("อัปเดตข้อมูลเรียบร้อยแล้ว")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("อัปเดตข้อมูลเรียบร้อยแล้ว"),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
   }
 
   Future<DocumentSnapshot?> _getUserProfile() async {
@@ -259,8 +267,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text("My Profile")),
+        appBar: AppBar(
+          title:
+              Text("My Profile", style: Theme.of(context).textTheme.titleLarge),
+        ),
         body: Center(child: CircularProgressIndicator()),
+        backgroundColor: Color.fromARGB(255, 158, 99, 200),
       );
     }
 
@@ -305,13 +317,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
         },
         child: Scaffold(
-          backgroundColor: Colors.grey[100],
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
-            title: Text("My Profile"),
-            backgroundColor: Colors.purple,
+            backgroundColor: const Color.fromARGB(255, 158, 99, 200),
+            title: Text(
+              "My Profile",
+              style: TextStyle(
+                color: Colors.white, // 🔁 เปลี่ยนตาม theme
+              ),
+            ),
+            iconTheme: const IconThemeData(color: Colors.white),
             actions: [
               IconButton(
-                icon: Icon(isEditing ? Icons.cancel : Icons.edit),
+                icon: Icon(
+                  isEditing ? Icons.cancel : Icons.edit,
+                ),
                 onPressed: () => setState(() => isEditing = !isEditing),
               )
             ],
@@ -333,15 +353,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: const TextStyle(
                       fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                Text(
-                  "@${controllers["username"]?.text ?? '-'}",
-                  style: TextStyle(color: Colors.grey[700]),
-                ),
+                Text("@${controllers["username"]?.text ?? '-'}",
+                    style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyMedium?.color)),
                 const SizedBox(height: 8),
                 Chip(
                   label: Text(controllers["role"]?.text ?? "user"),
-                  backgroundColor: Colors.purple.shade100,
-                  labelStyle: TextStyle(color: Colors.purple[900]),
+                  backgroundColor:
+                      Theme.of(context).colorScheme.primaryContainer,
+                  labelStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimaryContainer),
                 ),
                 const SizedBox(height: 20),
                 Divider(),
@@ -429,7 +450,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
       child: Card(
         key: ValueKey(key + "_field"),
-        color: Colors.purple.shade50,
+        color: Theme.of(context).colorScheme.surfaceVariant,
         margin: const EdgeInsets.symmetric(vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 3,
@@ -437,7 +458,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              Icon(iconData, color: Colors.purple),
+              Icon(iconData, color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 16),
               Expanded(
                 child: TextFormField(
@@ -446,9 +467,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   decoration: InputDecoration(
                     hintText: "กรอก $label",
                     labelText: label,
-                    labelStyle: TextStyle(color: Colors.purple.shade700),
+                    labelStyle:
+                        TextStyle(color: Theme.of(context).colorScheme.primary),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: Theme.of(context).cardColor,
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -458,13 +480,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.purple.shade200, width: 1),
+                      borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.primary),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.purple.shade700, width: 2),
+                      borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 2),
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -483,9 +506,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 2,
       child: ListTile(
-        leading: Icon(iconData, color: Colors.purple),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(value, style: const TextStyle(fontSize: 16)),
+        leading: Icon(iconData, color: Theme.of(context).colorScheme.primary),
+        title: Text(title,
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold)),
+        subtitle: Text(value, style: Theme.of(context).textTheme.bodyLarge),
       ),
     );
   }

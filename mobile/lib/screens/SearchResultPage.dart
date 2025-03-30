@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:real_estate_project/RealEstateCard.dart';
+import 'package:real_estate_project/widgets/RealEstateCard.dart';
 import 'package:real_estate_project/screens/property_detail.dart';
 import 'package:real_estate_project/services/firebase_service.dart';
 import 'package:shimmer/shimmer.dart';
@@ -109,29 +109,13 @@ class _SearchResultPageState extends State<SearchResultPage> {
                           );
                         },
                         child: RealEstateCard(
-                          realEstateId: realEstateId,
-                          imagePath: imageSnapshot.data!,
-                          price: item['price'].toString(),
-                          name: item['name'] ?? "ไม่ระบุชื่อ",
-                          location:
-                              "${item['province'] ?? ''} | ${item['type_realestate'] ?? ''}",
-                          sellType: item['type_sell'] ?? "",
-                          isInitiallyFavorite:
-                              favoriteIds.contains(realEstateId),
-                          onToggleFavorite: (id) async {
-                            final result =
-                                await FirebaseService.toggleFavoriteInFirestore(
-                                    id);
-                            setState(() {
-                              if (result) {
-                                favoriteIds.add(id);
-                              } else {
-                                favoriteIds.remove(id);
-                              }
-                            });
-                            return result;
-                          },
-                        ),
+                            realEstateId: realEstateId,
+                            imagePath: imageSnapshot.data!,
+                            price: item['price'].toString(),
+                            name: item['name'] ?? "ไม่ระบุชื่อ",
+                            location:
+                                "${item['province'] ?? ''} | ${item['type_realestate'] ?? ''}",
+                            sellType: item['type_sell'] ?? ""),
                       );
                     },
                   );

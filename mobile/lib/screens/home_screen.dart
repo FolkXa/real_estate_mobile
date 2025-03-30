@@ -1,3 +1,4 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -22,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String selectedCategory = "All";
   Set<int> favoriteIds = {};
   final ScrollController _scrollController = ScrollController();
+  ValueNotifier<bool> isCollapsedNotifier = ValueNotifier(false);
 
   final currentUser = FirebaseAuth.instance.currentUser;
 
@@ -29,6 +31,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     fetchFavorites();
+    _scrollController.addListener(() {
+      final isCollapsed = _scrollController.offset > 100;
+      if (isCollapsed != isCollapsedNotifier.value) {
+        isCollapsedNotifier.value = isCollapsed;
+      }
+    });
   }
 
   void fetchFavorites() async {
@@ -102,7 +110,24 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverAppBar(
             expandedHeight: 220,
             pinned: true,
-            backgroundColor: Colors.white,
+            backgroundColor: Theme.of(context).appBarTheme.backgroundColor ??
+                Theme.of(context).colorScheme.surface,
+            leading: ValueListenableBuilder<bool>(
+              valueListenable: isCollapsedNotifier,
+              builder: (context, isCollapsed, _) {
+                return IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                  ),
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                );
+              },
+            ),
             flexibleSpace: LayoutBuilder(
               builder: (context, constraints) {
                 var top = constraints.biggest.height;
@@ -147,14 +172,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: Text(
                                       "iconhome",
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.black,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 20,
                                       ),
                                     ),
                                   )
                                 : SafeArea(
-                                    bottom: false, // ไม่ต้องใช้พื้นที่ล่าง
+                                    bottom: false,
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       crossAxisAlignment:
@@ -180,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             "Let's start exploring",
                                             style: TextStyle(
                                               fontSize: 16,
-                                              color: Colors.white70,
+                                              color: Colors.white,
                                               shadows: [
                                                 Shadow(
                                                     blurRadius: 2,
@@ -204,14 +232,15 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(child: _buildSearchBar(context)),
           SliverToBoxAdapter(child: _buildCategorySelector()),
           SliverToBoxAdapter(child: _buildPromotionBanner()),
-          SliverToBoxAdapter(child: _buildSectionTitle("Featured Estates")),
+          SliverToBoxAdapter(child: _buildSectionTitle("อสังหาที่แนะนำ")),
           SliverToBoxAdapter(child: _buildFeaturedEstates()),
-          SliverToBoxAdapter(child: _buildSectionTitle("Top Locations")),
+          SliverToBoxAdapter(child: _buildSectionTitle("สถานที่ยอดฮิต")),
           SliverToBoxAdapter(child: _buildTopLocations()),
-          SliverToBoxAdapter(child: _buildSectionTitle("Estate Agent")),
+          SliverToBoxAdapter(child: _buildSectionTitle("พนักงานขาย")),
           SliverToBoxAdapter(child: _buildEstateAgents()),
           SliverToBoxAdapter(
-              child: _buildSectionTitle("Explore Nearby Estates")),
+            child: _buildSectionTitle("อสังหาที่แนะนำ", topPadding: 2.0),
+          ),
           SliverToBoxAdapter(child: _buildNearbyEstates()),
         ],
       ),
@@ -270,16 +299,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: TextStyle(fontSize: 18, color: Colors.grey)),
                 ],
               ),
-              // GestureDetector(
-              //   onTap: () {
-              //     Navigator.push(context,
-              //         MaterialPageRoute(builder: (context) => ProfileScreen()));
-              //   },
-              //   child: CircleAvatar(
-              //     radius: 25,
-              //     backgroundImage: NetworkImage(imageUrl),
-              //   ),
-              // ),
             ],
           ),
         );
@@ -385,68 +404,176 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+          // ทำให้รูปมืดลง
+          Container(
+            height: 180,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15.0),
+              color: Colors.black.withOpacity(0.4),
+            ),
+          ),
+          // ข้อความมีขอบชัดเจน
           Positioned(
             left: 16,
             bottom: 16,
-            child: Text(
-              "Hot Sale!\nAll discount up to 60%",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+            child: Stack(
+              children: [
+                Text(
+                  "Hot Sale!\nAll discount up to 60%",
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
   /// Section Title
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, {double topPadding = 24.0}) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-          16.0, 16.0, 16.0, 16.0), // ลดระยะห่างด้านบน/ล่างเป็น 0
+      padding: EdgeInsets.fromLTRB(16.0, topPadding, 16.0, 16.0),
       child: Text(
         title,
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  /// Featured Estates
+  // /// Featured Estates
+  // Widget _buildFeaturedEstates() {
+  //   return Container(
+  //     height: 150,
+  //     child: ListView(
+  //       scrollDirection: Axis.horizontal,
+  //       children: [
+  //         _buildFeaturedCard("Sky Dandelions Apartment", "\$200,000"),
+  //         _buildFeaturedCard("Luxury Condo", "\$350,000"),
+  //       ],
+  //     ),
+  //   );
+  // }
+
   Widget _buildFeaturedEstates() {
-    return Container(
-      height: 150,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          _buildFeaturedCard("Sky Dandelions Apartment", "\$200,000"),
-          _buildFeaturedCard("Luxury Condo", "\$350,000"),
-        ],
-      ),
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('real_estate')
+          .where('premium_promote', isEqualTo: true)
+          .limit(6)
+          .get(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        final docs = snapshot.data!.docs;
+        final numberFormat = NumberFormat("#,###"); // ✅ เพิ่ม formatter
+
+        return SizedBox(
+          height: 180,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.only(left: 16.0),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+              final title = data['name'] ?? 'No Name';
+              final priceRaw = data['price'] ?? 0;
+              final priceFormatted =
+                  numberFormat.format(priceRaw); // ✅ ใส่ comma
+              final realEstateId = data['real_estate_id'];
+
+              return FutureBuilder<QuerySnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('image_real_estate')
+                    .where('real_estate_id', isEqualTo: realEstateId)
+                    .where('title_img', isEqualTo: 1)
+                    .limit(1)
+                    .get(),
+                builder: (context, imageSnapshot) {
+                  if (!imageSnapshot.hasData ||
+                      imageSnapshot.data!.docs.isEmpty) {
+                    return _buildFeaturedImageCard(
+                        title, priceFormatted, '', realEstateId);
+                  }
+
+                  final imageUrl = imageSnapshot.data!.docs.first['image_path'];
+                  return _buildFeaturedImageCard(
+                      title, priceFormatted, imageUrl, realEstateId);
+                },
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildFeaturedCard(String title, String price) {
-    return Container(
-      width: 200,
-      margin: EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15.0),
-        image: DecorationImage(
-          image: AssetImage("assets/images/house1.jpg"),
-          fit: BoxFit.cover,
+  Widget _buildFeaturedImageCard(
+      String title, String price, String imageUrl, int realEstateId) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PropertyDetailScreen(realEstateId: realEstateId),
+          ),
+        );
+      },
+      child: Container(
+        width: 200,
+        margin: EdgeInsets.only(right: 12.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15.0),
+          image: DecorationImage(
+            image: imageUrl.isNotEmpty
+                ? NetworkImage(imageUrl)
+                : AssetImage('assets/images/placeholder.jpg') as ImageProvider,
+            fit: BoxFit.cover,
+          ),
         ),
-      ),
-      child: Align(
-        alignment: Alignment.bottomLeft,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            "$title\n$price",
-            style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15.0),
+            color: Colors.black.withOpacity(0.3),
+          ),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "฿$price",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -515,7 +642,7 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 150,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.only(left: 16.0, right: 66.0),
             itemCount: agents.length,
             itemBuilder: (context, index) {
               var doc = agents[index];
@@ -597,9 +724,10 @@ class _HomeScreenState extends State<HomeScreen> {
         .collection('real_estate')
         .where('active', isEqualTo: true);
 
-    if (selectedCategory != "All") {
+    if (selectedCategory != "ทั้งหมด") {
       query = query.where('type_realestate', isEqualTo: selectedCategory);
     }
+
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('real_estate')
@@ -620,6 +748,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return GridView.builder(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.only(top: 4),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               childAspectRatio: 0.75,
@@ -630,7 +759,7 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (context, index) {
               var data = estates[index].data() as Map<String, dynamic>;
 
-              int realEstateId = data["real_estate_id"];
+              int realEstateId = (data["real_estate_id"] as num).toInt();
               String price = data["price"].toString();
               String name = data["name"] ?? "ไม่ระบุชื่อ";
               String location = data["province"] ?? "ไม่ระบุที่ตั้ง";
@@ -644,7 +773,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context) =>
                           PropertyDetailScreen(realEstateId: realEstateId),
                     ),
-                  );
+                  ).then((_) {
+                    setState(() {
+                      fetchFavorites();
+                    });
+                  });
                 },
                 child: FutureBuilder<QuerySnapshot>(
                   future: FirebaseFirestore.instance
@@ -670,9 +803,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       name: name,
                       location: location,
                       sellType: sellType,
-                      // isInitiallyFavorite: favoriteIds.contains(realEstateId),
-                      // onToggleFavorite:
-                      //     FirebaseService.toggleFavoriteInFirestore,
                     );
                   },
                 ),
@@ -691,7 +821,6 @@ class CustomDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
-
     return Drawer(
       child: FutureBuilder<QuerySnapshot>(
         future: FirebaseFirestore.instance
@@ -713,8 +842,20 @@ class CustomDrawer extends StatelessWidget {
           return Column(
             children: [
               UserAccountsDrawerHeader(
-                accountName: Text(name),
-                accountEmail: Text(currentUser?.email ?? ''),
+                decoration: const BoxDecoration(
+                  color: Color.fromARGB(255, 158, 99, 200), // 💜 พื้นหลังม่วง
+                ),
+                accountName: Text(
+                  name,
+                  style: TextStyle(
+                      color: Colors.white, // ✅ ข้อความสีขาวให้อ่านง่าย
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16),
+                ),
+                accountEmail: Text(
+                  currentUser?.email ?? '',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
                 currentAccountPicture: CircleAvatar(
                   backgroundImage: NetworkImage(imagePath),
                 ),
@@ -738,6 +879,13 @@ class CustomDrawer extends StatelessWidget {
                 title: Text('My Favorite'),
                 onTap: () {
                   Navigator.pushNamed(context, '/favorite');
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.settings),
+                title: Text('Settings'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/settings');
                 },
               ),
               Spacer(),

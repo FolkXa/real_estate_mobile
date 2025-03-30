@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:real_estate_project/RealEstateCard.dart';
+import 'package:real_estate_project/widgets/RealEstateCard.dart';
 import 'package:real_estate_project/screens/property_detail.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:intl/intl.dart';
@@ -55,10 +55,14 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var query = FirebaseFirestore.instance
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance
         .collection('real_estate')
-        .where('type_realestate', isEqualTo: widget.category)
-        .where('active', isEqualTo: true);
+        .where('active', isEqualTo: true); // default ทุกกรณี
+
+    // ✅ ถ้าไม่ใช่ "ทั้งหมด" ค่อยเพิ่ม where 'type_realestate'
+    if (widget.category != "ทั้งหมด") {
+      query = query.where('type_realestate', isEqualTo: widget.category);
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text("ประเภท: ${widget.category}")),
@@ -116,15 +120,12 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
                     }
 
                     return RealEstateCard(
-                      realEstateId: realEstateId,
-                      imagePath: imagePath,
-                      price: price,
-                      name: name,
-                      location: location,
-                      sellType: sellType,
-                      isInitiallyFavorite: favoriteIds.contains(realEstateId),
-                      onToggleFavorite: toggleFavoriteInFirestore,
-                    );
+                        realEstateId: realEstateId,
+                        imagePath: imagePath,
+                        price: price,
+                        name: name,
+                        location: location,
+                        sellType: sellType);
                   },
                 ),
               );
