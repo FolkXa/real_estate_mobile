@@ -26,6 +26,29 @@ class FirebaseService {
     }
   }
 
+  Future<bool> isFavorite(int realEstateId) async {
+    final userEmail = auth.FirebaseAuth.instance.currentUser?.email;
+
+    final userSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: userEmail)
+        .limit(1)
+        .get();
+
+    if (userSnapshot.docs.isEmpty) return false;
+
+    final userId = userSnapshot.docs.first['user_id'];
+
+    final favoriteSnapshot = await FirebaseFirestore.instance
+        .collection('favorite_real_estate')
+        .where('user_id', isEqualTo: userId)
+        .where('real_estate_id', isEqualTo: realEstateId)
+        .limit(1)
+        .get();
+
+    return favoriteSnapshot.docs.isNotEmpty;
+  }
+
   // Get nearby properties
   Future<List<RealEstate>> getNearbyRealEstate(
       String province, int currentId) async {
@@ -109,6 +132,50 @@ class FirebaseService {
           .toList();
     } catch (e) {
       print('Error fetching user: $e');
+      return [];
+    }
+  }
+
+  Future<List<RealEstate>> getRandomRealEstate({int limit = 6}) async {
+    try {
+      final snapshot = await _firestore
+          .collection('real_estate')
+          .where('active', isEqualTo: true)
+          .orderBy('timestamp', descending: true)
+          .limit(limit)
+          .get();
+
+      final docs = snapshot.docs..shuffle();
+
+      List<RealEstate> properties = [];
+
+      for (final doc in docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final property = RealEstate.fromMap(data);
+
+        // ✅ ดึงเฉพาะรูปที่เป็น title_img = 1
+        final imageSnapshot = await _firestore
+            .collection('image_real_estate')
+            .where('real_estate_id', isEqualTo: property.realEstateId)
+            .where('title_img', isEqualTo: 1)
+            .limit(1)
+            .get();
+
+        if (imageSnapshot.docs.isNotEmpty) {
+          final imageData =
+              imageSnapshot.docs.first.data() as Map<String, dynamic>;
+          final imagePath = imageData['image_path'] as String?;
+          if (imagePath != null && imagePath.isNotEmpty) {
+            property.images.add(imagePath); // ✅ ใส่แค่ภาพหลัก
+          }
+        }
+
+        properties.add(property);
+      }
+
+      return properties;
+    } catch (e) {
+      print("Error in getRandomRealEstate: $e");
       return [];
     }
   }

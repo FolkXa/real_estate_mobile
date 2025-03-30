@@ -1,3 +1,4 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -298,16 +299,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: TextStyle(fontSize: 18, color: Colors.grey)),
                 ],
               ),
-              // GestureDetector(
-              //   onTap: () {
-              //     Navigator.push(context,
-              //         MaterialPageRoute(builder: (context) => ProfileScreen()));
-              //   },
-              //   child: CircleAvatar(
-              //     radius: 25,
-              //     backgroundImage: NetworkImage(imageUrl),
-              //   ),
-              // ),
             ],
           ),
         );
@@ -454,39 +445,119 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Featured Estates
+  // /// Featured Estates
+  // Widget _buildFeaturedEstates() {
+  //   return Container(
+  //     height: 150,
+  //     child: ListView(
+  //       scrollDirection: Axis.horizontal,
+  //       children: [
+  //         _buildFeaturedCard("Sky Dandelions Apartment", "\$200,000"),
+  //         _buildFeaturedCard("Luxury Condo", "\$350,000"),
+  //       ],
+  //     ),
+  //   );
+  // }
+
   Widget _buildFeaturedEstates() {
-    return Container(
-      height: 150,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          _buildFeaturedCard("Sky Dandelions Apartment", "\$200,000"),
-          _buildFeaturedCard("Luxury Condo", "\$350,000"),
-        ],
-      ),
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('real_estate')
+          .where('premium_promote', isEqualTo: true)
+          .limit(6)
+          .get(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        final docs = snapshot.data!.docs;
+
+        return SizedBox(
+          height: 180,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.only(left: 16.0),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+              final title = data['name'] ?? 'No Name';
+              final price = data['price']?.toString() ?? '0';
+              final realEstateId = data['real_estate_id'];
+
+              return FutureBuilder<QuerySnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('image_real_estate')
+                    .where('real_estate_id', isEqualTo: realEstateId)
+                    .where('title_img', isEqualTo: 1)
+                    .limit(1)
+                    .get(),
+                builder: (context, imageSnapshot) {
+                  if (!imageSnapshot.hasData ||
+                      imageSnapshot.data!.docs.isEmpty) {
+                    return _buildImageCard(title, price, '');
+                  }
+
+                  final imageUrl = imageSnapshot.data!.docs.first['image_path'];
+                  return _buildImageCard(title, price, imageUrl);
+                },
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildFeaturedCard(String title, String price) {
+  Widget _buildImageCard(String title, String price, String imageUrl) {
     return Container(
       width: 200,
-      margin: EdgeInsets.all(8.0),
+      margin: EdgeInsets.only(right: 12.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15.0),
         image: DecorationImage(
-          image: AssetImage("assets/images/house1.jpg"),
+          image: imageUrl.isNotEmpty
+              ? NetworkImage(imageUrl)
+              : AssetImage('assets/images/placeholder.jpg') as ImageProvider,
           fit: BoxFit.cover,
         ),
       ),
-      child: Align(
-        alignment: Alignment.bottomLeft,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            "$title\n$price",
-            style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15.0),
+          color: Colors.black.withOpacity(0.3),
+        ),
+        child: Align(
+          alignment: Alignment.bottomLeft,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "฿$price",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -555,7 +626,7 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 150,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.only(left: 16.0, right: 66.0),
             itemCount: agents.length,
             itemBuilder: (context, index) {
               var doc = agents[index];
@@ -685,7 +756,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context) =>
                           PropertyDetailScreen(realEstateId: realEstateId),
                     ),
-                  );
+                  ).then((result) {
+                    if (result == true) {
+                      fetchFavorites(); // ✅ โหลด favorite ใหม่
+                    }
+                  });
                 },
                 child: FutureBuilder<QuerySnapshot>(
                   future: FirebaseFirestore.instance
