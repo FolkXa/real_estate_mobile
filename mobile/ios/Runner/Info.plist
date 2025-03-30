@@ -68,6 +68,9 @@
     <!-- Microphone usage description (needed for some image pickers) -->
     <key>NSMicrophoneUsageDescription</key>
     <string>This app needs microphone access to record videos</string>
+
+	<key>io.flutter.embedded_views_preview</key>
+<true/>
     
     <!-- Other existing entries -->
 </dict>
