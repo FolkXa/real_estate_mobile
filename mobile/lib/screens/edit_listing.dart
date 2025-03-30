@@ -8,6 +8,7 @@ import 'dart:io';
 import '../models/area.dart';
 import '../models/user.dart';
 import '../services/firebase_service.dart';
+import '../services/user_service.dart';
 import '../utils/image_viewer.dart';
 
 class EditListingScreen extends StatefulWidget {
@@ -552,10 +553,12 @@ class _EditListingScreenState extends State<EditListingScreen> {
     for (var imageFile in _newImages) {
       final String fileName =
           'estate_${widget.realEstateId}_${DateTime.now().millisecondsSinceEpoch}';
+      // Compress the image before uploading
+      final compressedImageFile = await UserService().compressImage(imageFile);
       final Reference storageRef =
           _storage.ref().child('image_real_estate/$fileName');
 
-      final UploadTask uploadTask = storageRef.putFile(imageFile);
+      final UploadTask uploadTask = storageRef.putFile(compressedImageFile);
       final TaskSnapshot taskSnapshot = await uploadTask;
 
       final String downloadUrl = await taskSnapshot.ref.getDownloadURL();
@@ -615,7 +618,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
   bool _validateAreaFields() {
     // Validate rai (max 4 characters)
-    if (_raiController.text.isNotEmpty && _raiController.text.length > 4) {
+    if (_raiController.text.isNotEmpty && int.tryParse(_raiController.text)! > 1000) {
       setState(() {
         _errorMessage = 'จำนวนไร่ต้องไม่เกิน 4 หลัก';
       });

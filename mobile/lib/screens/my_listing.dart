@@ -175,6 +175,11 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
                                       });
                                     });
                                   },
+                                  onDelete: () {
+                                    setState(() {
+                                      _loadData();
+                                    });
+                                  },
                                 );
                               },
                             ),
@@ -190,15 +195,51 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
   }
 }
 
-class PropertyListingCard extends StatelessWidget {
+class PropertyListingCard extends StatefulWidget {
   final RealEstate property;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   const PropertyListingCard({
     Key? key,
     required this.property,
     required this.onTap,
+    required this.onDelete,
   }) : super(key: key);
+
+  @override
+  _PropertyListingCardState createState() => _PropertyListingCardState();
+}
+
+class _PropertyListingCardState extends State<PropertyListingCard> {
+  late BuildContext _context;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _context = context;
+  }
+
+  void _deleteListing(RealEstate property) async {
+    final firebaseService = FirebaseService();
+
+    try {
+      // เรียกเมธอดลบรูป + ลบข้อมูลอสังหา
+      await firebaseService.deleteRealEstate(property.realEstateId);
+
+      // เรียก callback เพื่อ refresh
+      widget.onDelete();
+
+      ScaffoldMessenger.of(_context).showSnackBar(
+        const SnackBar(content: Text("ลบรายการสำเร็จ")),
+      );
+    } catch (e) {
+      print('Error deleting listing: $e');
+      ScaffoldMessenger.of(_context).showSnackBar(
+        const SnackBar(content: Text("เกิดข้อผิดพลาดในการลบ")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +262,7 @@ class PropertyListingCard extends StatelessWidget {
         children: [
           // Property content
           GestureDetector(
-            onTap: onTap,
+            onTap: widget.onTap,
             child: Row(
               children: [
                 Padding(
@@ -234,8 +275,8 @@ class PropertyListingCard extends StatelessWidget {
                       child: Stack(
                         children: [
                           Image.network(
-                            property.images.isNotEmpty
-                                ? property.images.first
+                            widget.property.images.isNotEmpty
+                                ? widget.property.images.first
                                 : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_JsEVYJcvZScI2sYdQq7FXB7ZIiSvucI0lA&s',
                             width: 150,
                             height: 150,
@@ -257,7 +298,7 @@ class PropertyListingCard extends StatelessWidget {
                                       color: Colors.white, size: 10),
                                   const SizedBox(width: 4),
                                   Text(
-                                    property.typeRealestate,
+                                    widget.property.typeRealestate,
                                     style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 10,
@@ -267,7 +308,7 @@ class PropertyListingCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          if (property.premiumPromote)
+                          if (widget.property.premiumPromote)
                             Positioned(
                               bottom: 8,
                               right: 6,
@@ -301,7 +342,7 @@ class PropertyListingCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          property.details,
+                          widget.property.details,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -317,7 +358,7 @@ class PropertyListingCard extends StatelessWidget {
                                 color: Colors.amber, size: 16),
                             const SizedBox(width: 4),
                             Text(
-                              (property.view).toString(),
+                              (widget.property.view).toString(),
                               style: TextStyle(
                                 fontSize: 14,
                                 color: isDarkMode ? Colors.white70 : Colors.black87,
@@ -333,7 +374,7 @@ class PropertyListingCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
-                                "${property.address} ${property.amphur} ${property.tambon} ${property.province}",
+                                "${widget.property.address} ${widget.property.amphur} ${widget.property.tambon} ${widget.property.province}",
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: isDarkMode ? Colors.grey[400] : Colors.grey,
@@ -346,7 +387,7 @@ class PropertyListingCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "\฿ ${Formatters.formatCurrency(property.price)}",
+                          "\฿ ${Formatters.formatCurrency(widget.property.price)}",
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -373,7 +414,7 @@ class PropertyListingCard extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => EditListingScreen(
-                            realEstateId: property.realEstateId,
+                            realEstateId: widget.property.realEstateId,
                           ),
                         ),
                       );
@@ -408,6 +449,7 @@ class PropertyListingCard extends StatelessWidget {
                             TextButton(
                               onPressed: () {
                                 // Implement delete
+                                _deleteListing(widget.property);
                                 Navigator.pop(context);
                               },
                               child: const Text("Delete",

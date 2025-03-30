@@ -1,3 +1,5 @@
+import 'dart:nativewrappers/_internal/vm/lib/ffi_native_type_patch.dart';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
@@ -8,6 +10,7 @@ import 'dart:io';
 import '../models/area.dart';
 import '../models/user.dart';
 import '../services/firebase_service.dart';
+import '../services/user_service.dart';
 
 class CreateListingScreen extends StatefulWidget {
   const CreateListingScreen({Key? key}) : super(key: key);
@@ -406,12 +409,16 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
     for (var i = 0; i < _images.length; i++) {
       final imageFile = _images[i];
+
+      // Compress the image before uploading
+      final compressedImageFile = await UserService().compressImage(imageFile);
+
       final String fileName =
           'estate_${realEstateId}_${DateTime.now().millisecondsSinceEpoch}_$i';
       final Reference storageRef =
           _storage.ref().child('image_real_estate/$fileName');
 
-      final UploadTask uploadTask = storageRef.putFile(imageFile);
+      final UploadTask uploadTask = storageRef.putFile(compressedImageFile);
       final TaskSnapshot taskSnapshot = await uploadTask;
 
       final String downloadUrl = await taskSnapshot.ref.getDownloadURL();
@@ -459,7 +466,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   bool _validateAreaFields() {
     // Validate rai (max 4 characters)
-    if (_raiController.text.isNotEmpty && _raiController.text.length > 4) {
+    if (_raiController.text.isNotEmpty && int.tryParse(_raiController.text)! > 1000) {
       setState(() {
         _errorMessage = 'จำนวนไร่ต้องไม่เกิน 4 หลัก';
       });
