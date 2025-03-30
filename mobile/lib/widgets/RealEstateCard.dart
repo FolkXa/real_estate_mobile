@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:real_estate_project/screens/property_detail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shimmer/shimmer.dart';
 
 class RealEstateCard extends StatefulWidget {
   final int realEstateId;
@@ -146,7 +147,7 @@ class _RealEstateCardState extends State<RealEstateCard> {
                     height: 130,
                     width: double.infinity,
                     child: widget.imagePath.startsWith('http')
-                        ? Image.network(widget.imagePath, fit: BoxFit.cover)
+                        ? _buildShimmerImage(widget.imagePath)
                         : Image.asset("assets/images/house1.jpg",
                             fit: BoxFit.cover),
                   ),
@@ -220,6 +221,30 @@ class _RealEstateCardState extends State<RealEstateCard> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildShimmerImage(String imageUrl) {
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: 130,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            width: double.infinity,
+            height: 130,
+            color: Colors.white,
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Image.asset("assets/images/house1.jpg", fit: BoxFit.cover);
+      },
     );
   }
 }

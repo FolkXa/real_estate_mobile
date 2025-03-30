@@ -139,8 +139,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       isEditing = false;
     });
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("อัปเดตข้อมูลเรียบร้อยแล้ว")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("อัปเดตข้อมูลเรียบร้อยแล้ว"),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
   }
 
   Future<DocumentSnapshot?> _getUserProfile() async {
@@ -264,6 +272,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Text("My Profile", style: Theme.of(context).textTheme.titleLarge),
         ),
         body: Center(child: CircularProgressIndicator()),
+        backgroundColor: Color.fromARGB(255, 158, 99, 200),
       );
     }
 
@@ -310,20 +319,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
+            backgroundColor: const Color.fromARGB(255, 158, 99, 200),
             title: Text(
               "My Profile",
               style: TextStyle(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onPrimary, // 🔁 เปลี่ยนตาม theme
+                color: Colors.white, // 🔁 เปลี่ยนตาม theme
               ),
             ),
-            iconTheme: IconThemeData(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onPrimary, // 🔁 ทำให้ไอคอนเปลี่ยนตาม theme
-            ),
+            iconTheme: const IconThemeData(color: Colors.white),
             actions: [
               IconButton(
                 icon: Icon(

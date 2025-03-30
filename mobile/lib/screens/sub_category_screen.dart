@@ -55,10 +55,14 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var query = FirebaseFirestore.instance
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance
         .collection('real_estate')
-        .where('type_realestate', isEqualTo: widget.category)
-        .where('active', isEqualTo: true);
+        .where('active', isEqualTo: true); // default ทุกกรณี
+
+    // ✅ ถ้าไม่ใช่ "ทั้งหมด" ค่อยเพิ่ม where 'type_realestate'
+    if (widget.category != "ทั้งหมด") {
+      query = query.where('type_realestate', isEqualTo: widget.category);
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text("ประเภท: ${widget.category}")),

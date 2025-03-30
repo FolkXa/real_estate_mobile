@@ -30,7 +30,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
   late Future<User?> _agentFuture;
   bool isFavorite = false;
   bool _isMapExpanded = false;
-  late Future<List<RealEstate>> _nearbyPropertiesFuture;
+  late Future<List<RealEstate>> _recommendedPropertiesFuture;
 
   @override
   void initState() {
@@ -48,17 +48,8 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
       if (realEstate != null) {
         _agentFuture = _firebaseService.getUserById(realEstate.workerService);
         _ownerFuture = _firebaseService.getUserById(realEstate.userId);
-        _nearbyPropertiesFuture = _firebaseService.getNearbyRealEstate(
-          realEstate.province,
-          realEstate.realEstateId,
-        );
-
-        final nearby = await _nearbyPropertiesFuture;
-        for (final property in nearby) {
-          final images = await _firebaseService
-              .getImagesForRealEstate(property.realEstateId);
-          property.images.addAll(images);
-        }
+        _recommendedPropertiesFuture =
+            _firebaseService.getRandomRealEstate(limit: 6);
 
         isFavorite = await _firebaseService.isFavorite(realEstate.realEstateId);
 
@@ -555,7 +546,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: FutureBuilder<List<RealEstate>>(
-                    future: _nearbyPropertiesFuture,
+                    future: _recommendedPropertiesFuture,
                     builder: (context, snapshot) {
                       if (!snapshot.hasData || snapshot.data!.isEmpty) {
                         return const Padding(
@@ -566,6 +557,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
 
                       final properties = snapshot.data!
                           .where((p) => p.realEstateId != property.realEstateId)
+                          .take(4)
                           .toList();
 
                       return GridView.builder(

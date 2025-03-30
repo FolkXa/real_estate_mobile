@@ -232,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(child: _buildSearchBar(context)),
           SliverToBoxAdapter(child: _buildCategorySelector()),
           SliverToBoxAdapter(child: _buildPromotionBanner()),
-          SliverToBoxAdapter(child: _buildSectionTitle("Featured Estates")),
+          SliverToBoxAdapter(child: _buildSectionTitle("อสังหาที่แนะนำ")),
           SliverToBoxAdapter(child: _buildFeaturedEstates()),
           SliverToBoxAdapter(child: _buildSectionTitle("สถานที่ยอดฮิต")),
           SliverToBoxAdapter(child: _buildTopLocations()),
@@ -472,6 +472,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         final docs = snapshot.data!.docs;
+        final numberFormat = NumberFormat("#,###"); // ✅ เพิ่ม formatter
 
         return SizedBox(
           height: 180,
@@ -482,7 +483,9 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (context, index) {
               final data = docs[index].data() as Map<String, dynamic>;
               final title = data['name'] ?? 'No Name';
-              final price = data['price']?.toString() ?? '0';
+              final priceRaw = data['price'] ?? 0;
+              final priceFormatted =
+                  numberFormat.format(priceRaw); // ✅ ใส่ comma
               final realEstateId = data['real_estate_id'];
 
               return FutureBuilder<QuerySnapshot>(
@@ -495,11 +498,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 builder: (context, imageSnapshot) {
                   if (!imageSnapshot.hasData ||
                       imageSnapshot.data!.docs.isEmpty) {
-                    return _buildImageCard(title, price, '');
+                    return _buildFeaturedImageCard(
+                        title, priceFormatted, '', realEstateId);
                   }
 
                   final imageUrl = imageSnapshot.data!.docs.first['image_path'];
-                  return _buildImageCard(title, price, imageUrl);
+                  return _buildFeaturedImageCard(
+                      title, priceFormatted, imageUrl, realEstateId);
                 },
               );
             },
@@ -509,54 +514,65 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildImageCard(String title, String price, String imageUrl) {
-    return Container(
-      width: 200,
-      margin: EdgeInsets.only(right: 12.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15.0),
-        image: DecorationImage(
-          image: imageUrl.isNotEmpty
-              ? NetworkImage(imageUrl)
-              : AssetImage('assets/images/placeholder.jpg') as ImageProvider,
-          fit: BoxFit.cover,
-        ),
-      ),
+  Widget _buildFeaturedImageCard(
+      String title, String price, String imageUrl, int realEstateId) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PropertyDetailScreen(realEstateId: realEstateId),
+          ),
+        );
+      },
       child: Container(
+        width: 200,
+        margin: EdgeInsets.only(right: 12.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15.0),
-          color: Colors.black.withOpacity(0.3),
+          image: DecorationImage(
+            image: imageUrl.isNotEmpty
+                ? NetworkImage(imageUrl)
+                : AssetImage('assets/images/placeholder.jpg') as ImageProvider,
+            fit: BoxFit.cover,
+          ),
         ),
-        child: Align(
-          alignment: Alignment.bottomLeft,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15.0),
+            color: Colors.black.withOpacity(0.3),
+          ),
+          child: Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                    ),
                   ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  "฿$price",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                  SizedBox(height: 4),
+                  Text(
+                    "฿$price",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -708,9 +724,10 @@ class _HomeScreenState extends State<HomeScreen> {
         .collection('real_estate')
         .where('active', isEqualTo: true);
 
-    if (selectedCategory != "All") {
+    if (selectedCategory != "ทั้งหมด") {
       query = query.where('type_realestate', isEqualTo: selectedCategory);
     }
+
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('real_estate')
@@ -804,7 +821,6 @@ class CustomDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
-
     return Drawer(
       child: FutureBuilder<QuerySnapshot>(
         future: FirebaseFirestore.instance
@@ -826,8 +842,20 @@ class CustomDrawer extends StatelessWidget {
           return Column(
             children: [
               UserAccountsDrawerHeader(
-                accountName: Text(name),
-                accountEmail: Text(currentUser?.email ?? ''),
+                decoration: const BoxDecoration(
+                  color: Color.fromARGB(255, 158, 99, 200), // 💜 พื้นหลังม่วง
+                ),
+                accountName: Text(
+                  name,
+                  style: TextStyle(
+                      color: Colors.white, // ✅ ข้อความสีขาวให้อ่านง่าย
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16),
+                ),
+                accountEmail: Text(
+                  currentUser?.email ?? '',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
                 currentAccountPicture: CircleAvatar(
                   backgroundImage: NetworkImage(imagePath),
                 ),

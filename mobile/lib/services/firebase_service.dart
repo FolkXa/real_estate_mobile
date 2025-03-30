@@ -141,7 +141,6 @@ class FirebaseService {
       final snapshot = await _firestore
           .collection('real_estate')
           .where('active', isEqualTo: true)
-          .orderBy('timestamp', descending: true)
           .limit(limit)
           .get();
 

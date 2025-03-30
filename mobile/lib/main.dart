@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:real_estate_project/screens/forgot_password_screen.dart';
 import 'screens/settings_screen.dart';
 import 'theme.dart';
 import 'theme_provider.dart';
@@ -69,6 +70,7 @@ class MyApp extends StatelessWidget {
         '/my-listings': (context) => const MyListingsScreen(),
         '/create-listing': (context) => const CreateListingScreen(),
         '/settings': (context) => const SettingsScreen(),
+        '/forgot-password': (context) => const ForgotPasswordScreen(),
       },
     );
   }
