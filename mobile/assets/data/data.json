@@ -1,0 +1,1182 @@
+{
+  "users": [
+    {
+      "user_id": 1,
+      "username": "john_doe",
+      "password": "hashed_password1",
+      "email": "john@example.com",
+      "image_path": "agent1.jpg",
+      "role": "worker",
+      "first_name": "John",
+      "last_name": "Doe",
+      "nick_name": "Johnny",
+      "phone_number": "0812345678",
+      "active": true
+    },
+    {
+      "user_id": 2,
+      "username": "jane_smith",
+      "password": "hashed_password2",
+      "email": "jane@example.com",
+      "image_path": "agent2.jpg",
+      "role": "worker",
+      "first_name": "Jane",
+      "last_name": "Smith",
+      "nick_name": "Janey",
+      "phone_number": "0898765432",
+      "active": true
+    },
+    {
+      "user_id": 3,
+      "username": "mike_tyson",
+      "password": "hashed_password3",
+      "email": "mike@example.com",
+      "image_path": "agent3.jpg",
+      "role": "worker",
+      "first_name": "Mike",
+      "last_name": "Tyson",
+      "nick_name": "IronMike",
+      "phone_number": "0861234567",
+      "active": true
+    },
+    {
+      "user_id": 4,
+      "username": "wongkum543",
+      "password": "54354321",
+      "email": "wongkum55@gmail.com",
+      "image_path": "profile.jpg",
+      "role": "admin",
+      "first_name": "Saran",
+      "last_name": "Wongkum",
+      "nick_name": "Toto",
+      "phone_number": "0168204866",
+      "active": true
+    },
+    {
+      "user_id": 5,
+      "username": "FolkXA",
+      "password": "1234",
+      "email": "jirakit11619@gmail.com",
+      "image_path": "profile2.jpg",
+      "role": "admin",
+      "first_name": "Jirakit",
+      "last_name": "XD",
+      "nick_name": "Folk",
+      "phone_number": "0168204866",
+      "active": true
+    },
+    {
+      "user_id": 6,
+      "username": "alice_brown",
+      "password": "hashed_password6",
+      "email": "alice.brown@example.com",
+      "image_path": "default.jpg",
+      "role": "user",
+      "first_name": "Alice",
+      "last_name": "Brown",
+      "nick_name": "AliBr",
+      "phone_number": "0871757729",
+      "active": true
+    },
+    {
+      "user_id": 7,
+      "username": "bob_clark",
+      "password": "hashed_password7",
+      "email": "bob.clark@example.com",
+      "image_path": "default.jpg",
+      "role": "user",
+      "first_name": "Bob",
+      "last_name": "Clark",
+      "nick_name": "BobCl",
+      "phone_number": "0816061714",
+      "active": true
+    },
+    {
+      "user_id": 8,
+      "username": "charlie_davis",
+      "password": "hashed_password8",
+      "email": "charlie.davis@example.com",
+      "image_path": "default.jpg",
+      "role": "user",
+      "first_name": "Charlie",
+      "last_name": "Davis",
+      "nick_name": "ChaDa",
+      "phone_number": "0898401854",
+      "active": true
+    },
+    {
+      "user_id": 9,
+      "username": "diana_evans",
+      "password": "hashed_password9",
+      "email": "diana.evans@example.com",
+      "image_path": "default.jpg",
+      "role": "user",
+      "first_name": "Diana",
+      "last_name": "Evans",
+      "nick_name": "DiaEv",
+      "phone_number": "0877237949",
+      "active": true
+    },
+    {
+      "user_id": 10,
+      "username": "ethan_frank",
+      "password": "hashed_password10",
+      "email": "ethan.frank@example.com",
+      "image_path": "default.jpg",
+      "role": "user",
+      "first_name": "Ethan",
+      "last_name": "Frank",
+      "nick_name": "EthFr",
+      "phone_number": "0845158014",
+      "active": true
+    },
+    {
+      "user_id": 11,
+      "username": "fiona_green",
+      "password": "hashed_password11",
+      "email": "fiona.green@example.com",
+      "image_path": "default.jpg",
+      "role": "user",
+      "first_name": "Fiona",
+      "last_name": "Green",
+      "nick_name": "FioGr",
+      "phone_number": "0861632585",
+      "active": true
+    },
+    {
+      "user_id": 12,
+      "username": "george_hill",
+      "password": "hashed_password12",
+      "email": "george.hill@example.com",
+      "image_path": "default.jpg",
+      "role": "user",
+      "first_name": "George",
+      "last_name": "Hill",
+      "nick_name": "GeoHi",
+      "phone_number": "0820384260",
+      "active": true
+    },
+    {
+      "user_id": 13,
+      "username": "hannah_iverson",
+      "password": "hashed_password13",
+      "email": "hannah.iverson@example.com",
+      "image_path": "agent4.jpg",
+      "role": "worker",
+      "first_name": "Hannah",
+      "last_name": "Iverson",
+      "nick_name": "HanIv",
+      "phone_number": "0872992549",
+      "active": true
+    },
+    {
+      "user_id": 14,
+      "username": "ivan_johnson",
+      "password": "hashed_password14",
+      "email": "ivan.johnson@example.com",
+      "image_path": "agent5.jpg",
+      "role": "worker",
+      "first_name": "Ivan",
+      "last_name": "Johnson",
+      "nick_name": "IvaJo",
+      "phone_number": "0812670530",
+      "active": true
+    },
+    {
+      "user_id": 15,
+      "username": "julia_king",
+      "password": "hashed_password15",
+      "email": "julia.king@example.com",
+      "image_path": "default.jpg",
+      "role": "user",
+      "first_name": "Julia",
+      "last_name": "King",
+      "nick_name": "JulKi",
+      "phone_number": "0810876622",
+      "active": true
+    },
+    {
+      "user_id": 16,
+      "username": "kevin_lewis",
+      "password": "hashed_password16",
+      "email": "kevin.lewis@example.com",
+      "image_path": "agent6.jpg",
+      "role": "worker",
+      "first_name": "Kevin",
+      "last_name": "Lewis",
+      "nick_name": "KevLe",
+      "phone_number": "0870253205",
+      "active": true
+    },
+    {
+      "user_id": 17,
+      "username": "laura_morris",
+      "password": "hashed_password17",
+      "email": "laura.morris@example.com",
+      "image_path": "default.jpg",
+      "role": "user",
+      "first_name": "Laura",
+      "last_name": "Morris",
+      "nick_name": "LauMo",
+      "phone_number": "0840626466",
+      "active": true
+    }
+  ],
+  "real_estate": [
+    {
+      "real_estate_id": 1,
+      "worker_service": 2,
+      "user_id": 6,
+      "type_realestate": "บ้านเดี่ยว",
+      "type_sell": "ขายขาด",
+      "address": "123/4 ถนนพระราม 9",
+      "tambon": "ห้วยขวาง",
+      "amphur": "ห้วยขวาง",
+      "province": "กรุงเทพมหานคร",
+      "details": "ขายบ้านเดี่ยว 1 ชั้น ใกล้วัดทุ่งกระพังโหม ใกล้โรงเรียนวัดทุ่งกระพังโหม ถนนเพชรเกษม-มาลัยแมน ตำบลกำแพงแสน อำเภอกำแพงแสน จังหวัดนครปฐม บ้านสูง 1 ชั้น 3 ห้องนอน 2 ห้องน้ำ พร้อมที่จอดรถ 1 คัน พื้นที่หน้าบ้านกว้างประมาณ 10x30 เมตร และมีพื้นที่หลังบ้านเพิ่มเติมประมาณ 150 ตร.วา ตัวบ้านตกแต่งเรียบร้อย เทพื้นขัดมันอย่างดี ต่อเติมชายหลังคาหลังบ้าน เหมาะสำหรับอยู่อาศัยหรือทำโฮมออฟฟิศ เดินทางสะดวก ใกล้สถานที่สำคัญ เช่น วัดทุ่งกระพังโหม, โรงเรียนวัดทุ่งกระพังโหม, โฮมโปร ท่ากระพังโหม, ม.เกษตรศาสตร์ กำแพงแสน, โลตัส, ตลาดรุ่งเจริญ, สถานีตำรวจ และอบต.กำแพงแสน",
+      "view": 100,
+      "premium_promote": true,
+      "active": true,
+      "promote_at": "2025-01-01 10:00:00",
+      "promote_end": "2025-12-31 23:59:59",
+      "price": 5000000,
+      "name": "บ้านเดี่ยว 100 ตรว. เขตห้วยขวาง บ้านสวยใกล้รถไฟฟ้า",
+      "area": 100,
+      "bedroom": 3,
+      "bathroom": 2,
+      "latitude": 13.7563,
+      "longitude": 100.5018
+    },
+    {
+      "real_estate_id": 2,
+      "worker_service": 14,
+      "user_id": 8,
+      "type_realestate": "บ้านเดี่ยว",
+      "type_sell": "ขายขาด",
+      "address": "888/2 หมู่บ้านสุขสมใจ",
+      "tambon": "บางนา",
+      "amphur": "บางนา",
+      "province": "กรุงเทพมหานคร",
+      "details": "ขายบ้านเดี่ยว 2 ชั้น หมู่บ้านสุขสมใจ เขตบางนา พื้นที่ใช้สอยกว้างขวาง เหมาะสำหรับครอบครัว 3 ห้องนอน 2 ห้องน้ำ พร้อมพื้นที่สวนและลานจอดรถภายในบ้าน รองรับรถยนต์ได้ 2 คัน ภายในบ้านตกแต่งเรียบง่าย สภาพดี พร้อมเข้าอยู่ เดินทางสะดวก ใกล้ถนนบางนา-ตราด ใกล้ทางด่วน และรถไฟฟ้า BTS สถานีบางนา สถานที่สำคัญใกล้เคียง ได้แก่ โรงเรียนนานาชาติบางกอกพัฒนา, เซ็นทรัลบางนา, รพ.ไทยนครินทร์, เมกะบางนา, และไบเทคบางนา เหมาะสำหรับอยู่อาศัยหรือซื้อไว้ลงทุน",
+      "view": 30,
+      "premium_promote": true,
+      "active": true,
+      "promote_at": "2025-03-05 12:00:00",
+      "promote_end": "2025-09-05 23:59:59",
+      "price": 3500000,
+      "name": "บ้านแฝด 75 ตรว. เขตบางนา บ้านแฝด 2 ชั้น พื้นที่ใช้สอยเยอะ",
+      "area": 75,
+      "bedroom": 3,
+      "bathroom": 2,
+      "latitude": 13.6683,
+      "longitude": 100.6044
+    },
+    {
+      "real_estate_id": 3,
+      "worker_service": 13,
+      "user_id": 15,
+      "type_realestate": "บ้านเดี่ยว",
+      "type_sell": "ขายขาด",
+      "address": "45/6 ซอยสุขุมวิท 23",
+      "tambon": "วัฒนา",
+      "amphur": "วัฒนา",
+      "province": "กรุงเทพมหานคร",
+      "details": "ขายบ้านหรู 2 ชั้น ซอยสุขุมวิท 23 เขตวัฒนา ใจกลางเมืองกรุงเทพฯ พื้นที่ขนาด 120 ตรว. ตัวบ้านประกอบด้วย 5 ห้องนอน 4 ห้องน้ำ พื้นที่ใช้สอยกว้างขวาง พร้อมห้องรับแขก ห้องครัว ห้องแม่บ้าน และที่จอดรถ 2 คัน ตกแต่งด้วยวัสดุคุณภาพสูง สภาพดี พร้อมเข้าอยู่ เหมาะสำหรับพักอาศัยหรือทำเป็นโฮมออฟฟิศ ทำเลทอง เดินทางสะดวก ใกล้ BTS อโศก, MRT สุขุมวิท, Terminal 21, โรงเรียนนานาชาติ และโรงพยาบาลสมิติเวช สุขุมวิท",
+      "view": 250,
+      "premium_promote": true,
+      "active": true,
+      "promote_at": "2025-04-10 15:00:00",
+      "promote_end": "2025-10-10 23:59:59",
+      "price": 12000000,
+      "name": "บ้านหรู 120 ตรว. เขตวัฒนา บ้านหรูใจกลางเมือง ใกล้ BTS",
+      "area": 120,
+      "bedroom": 5,
+      "bathroom": 4,
+      "latitude": 13.737,
+      "longitude": 100.5646
+    },
+    {
+      "real_estate_id": 4,
+      "worker_service": 3,
+      "user_id": 12,
+      "type_realestate": "บ้านเดี่ยว",
+      "type_sell": "ขายขาด",
+      "address": "123/4 หมู่บ้านศิริกุล",
+      "tambon": "รามอินทรา",
+      "amphur": "คันนายาว",
+      "province": "กรุงเทพมหานคร",
+      "details": "ขายบ้านเดี่ยว 2 ชั้น หมู่บ้านศิริกุล ซอยรามอินทรา ใกล้แฟชั่นไอส์แลนด์ พื้นที่ 120 ตรว. 4 ห้องนอน 3 ห้องน้ำ พร้อมที่จอดรถ 2 คัน พื้นที่ใช้สอยกว้าง เหมาะสำหรับครอบครัวขนาดกลาง-ใหญ่ ภายในบ้านแบ่งพื้นที่เป็นสัดส่วน พร้อมพื้นที่สวนด้านหลัง บ้านหันหน้าทิศใต้ ลมเย็นตลอดปี ใกล้แหล่งอำนวยความสะดวก เช่น แฟชั่นไอส์แลนด์, โรงพยาบาลนพรัตน์, ทางด่วนฉลองรัช และสถานีรถไฟฟ้า Nopparat Station (สายสีชมพู)",
+      "view": 70,
+      "premium_promote": false,
+      "active": true,
+      "promote_at": "2025-07-20 10:00:00",
+      "promote_end": "2025-12-20 23:59:59",
+      "price": 6500000,
+      "name": "บ้านเดี่ยว 120 ตรว. เขตรามอินทรา บ้านเดี่ยว 2 ชั้น พื้นที่ใช้สอยกว้าง",
+      "area": 120,
+      "bedroom": 4,
+      "bathroom": 3,
+      "latitude": 13.8321,
+      "longitude": 100.6725
+    },
+    {
+      "real_estate_id": 5,
+      "worker_service": 16,
+      "user_id": 7,
+      "type_realestate": "บ้านเดี่ยว",
+      "type_sell": "ขายขาด",
+      "address": "44/3 หมู่บ้านริมทะเล",
+      "tambon": "หัวหิน",
+      "amphur": "ประจวบคีรีขันธ์",
+      "province": "ประจวบคีรีขันธ์",
+      "details": "ขายบ้านพักตากอากาศ 2 ชั้น หมู่บ้านริมทะเล อำเภอหัวหิน จังหวัดประจวบคีรีขันธ์ พื้นที่ 300 ตรว. พร้อมวิวทะเล เดินเพียง 5 นาทีถึงชายหาด ตัวบ้านประกอบด้วย 5 ห้องนอน 4 ห้องน้ำ ห้องรับแขกขนาดใหญ่ ครัวไทย-ฝรั่ง และสระว่ายน้ำส่วนตัว พร้อมสนามหญ้าและพื้นที่จัดปาร์ตี้ เหมาะสำหรับพักผ่อน หรือปล่อยเช่าเพื่อการลงทุน ใกล้ Cicada Market, Bluport, ตลาดโต้รุ่งหัวหิน และสนามกอล์ฟระดับโลก",
+      "view": 200,
+      "premium_promote": false,
+      "active": true,
+      "promote_at": "2025-09-15 09:00:00",
+      "promote_end": "2025-12-15 23:59:59",
+      "price": 15000000,
+      "name": "บ้านพักตากอากาศ 300 ตรว. อำเภอหัวหิน บ้านพักตากอากาศใกล้ชายหาด",
+      "area": 300,
+      "bedroom": 5,
+      "bathroom": 4,
+      "latitude": 12.5684,
+      "longitude": 99.9577
+    },
+    {
+      "real_estate_id": 6,
+      "worker_service": 1,
+      "user_id": 9,
+      "type_realestate": "คอนโด",
+      "type_sell": "เช่า",
+      "address": "999/12 ซอยสุขุมวิท 50",
+      "tambon": "พระโขนง",
+      "amphur": "คลองเตย",
+      "province": "กรุงเทพมหานคร",
+      "details": "ให้เช่าคอนโดใจกลางสุขุมวิท ซอยสุขุมวิท 50 เขตคลองเตย พื้นที่ 35 ตรว. 2 ห้องนอน 1 ห้องน้ำ ห้องตกแต่งสวย พร้อมเฟอร์นิเจอร์และเครื่องใช้ไฟฟ้าครบ เข้าอยู่ได้ทันที เดินเพียง 5 นาทีถึง BTS อ่อนนุช ใกล้โลตัสอ่อนนุช, เซ็นจูรี่สุขุมวิท, ทางด่วนสุขุมวิท 50, และตลาดอ่อนนุช เหมาะสำหรับคนทำงานในเมืองที่ต้องการความสะดวกสบายในการเดินทาง",
+      "view": 50,
+      "premium_promote": false,
+      "active": true,
+      "promote_at": "2025-02-01 09:00:00",
+      "promote_end": "2025-11-30 23:59:59",
+      "price": 15000,
+      "name": "คอนโด 35 ตรว. เขตคลองเตย คอนโดใจกลางเมือง",
+      "area": 35,
+      "bedroom": 2,
+      "bathroom": 1,
+      "latitude": 13.7089,
+      "longitude": 100.6004
+    },
+    {
+      "real_estate_id": 7,
+      "worker_service": 14,
+      "user_id": 10,
+      "type_realestate": "คอนโด",
+      "type_sell": "เช่า",
+      "address": "99/1 ถนนเยาวราช",
+      "tambon": "สัมพันธวงศ์",
+      "amphur": "สัมพันธวงศ์",
+      "province": "กรุงเทพมหานคร",
+      "details": "ให้เช่าอาคารพาณิชย์ 4 ชั้น บนถนนเยาวราช เขตสัมพันธวงศ์ ทำเลทองของการค้าขาย พื้นที่ 90 ตรว. ไม่มีห้องนอน มี 2 ห้องน้ำ เหมาะสำหรับเปิดร้านทอง ร้านอาหาร คาเฟ่ โชว์รูม หรือสำนักงาน ใกล้ MRT วัดมังกร, เยาวราช, ตลาดสำเพ็ง และศาลเจ้า พื้นที่หน้ากว้าง ติดถนนใหญ่ คนพลุกพล่านทั้งกลางวันและกลางคืน เหมาะสำหรับผู้ประกอบการที่ต้องการทำธุรกิจในย่านการค้าเก่าแก่ของกรุงเทพฯ",
+      "view": 120,
+      "premium_promote": false,
+      "active": true,
+      "promote_at": "2025-05-01 08:30:00",
+      "promote_end": "2025-12-01 23:59:59",
+      "price": 50000,
+      "name": "อาคารพาณิชย์ 90 ตรว. เขตสัมพันธวงศ์ อาคารพาณิชย์ 4 ชั้น เหมาะสำหรับทำธุรกิจ",
+      "area": 90,
+      "bedroom": 0,
+      "bathroom": 2,
+      "latitude": 13.7396,
+      "longitude": 100.5106
+    },
+    {
+      "real_estate_id": 8,
+      "worker_service": 2,
+      "user_id": 11,
+      "type_realestate": "คอนโด",
+      "type_sell": "เช่า",
+      "address": "555/7 ถนนรัชดาภิเษก",
+      "tambon": "ดินแดง",
+      "amphur": "ดินแดง",
+      "province": "กรุงเทพมหานคร",
+      "details": "ให้เช่าคอนโด High-Rise ชั้นสูง บนถนนรัชดาภิเษก เขตดินแดง พื้นที่ 50 ตรว. 2 ห้องนอน 2 ห้องน้ำ พร้อมเฟอร์นิเจอร์ครบและเครื่องใช้ไฟฟ้า แอร์ ทีวี ตู้เย็น เครื่องซักผ้า เดินทางสะดวก ใกล้ MRT ศูนย์วัฒนธรรมแห่งประเทศไทย, The Street Ratchada, Esplanade และ Big C รัชดา เหมาะสำหรับอยู่อาศัยหรือทำโฮมออฟฟิศ บรรยากาศดี วิวเมืองโล่งไม่มีตึกบัง",
+      "view": 95,
+      "premium_promote": true,
+      "active": true,
+      "promote_at": "2025-08-10 11:00:00",
+      "promote_end": "2025-12-10 23:59:59",
+      "price": 30000,
+      "name": "คอนโดหรู 50 ตรว. เขตดินแดง คอนโด High-Rise ใกล้ MRT",
+      "area": 50,
+      "bedroom": 2,
+      "bathroom": 2,
+      "latitude": 13.7765,
+      "longitude": 100.573
+    },
+    {
+      "real_estate_id": 9,
+      "worker_service": 3,
+      "user_id": 17,
+      "type_realestate": "คอนโด",
+      "type_sell": "เช่า",
+      "address": "789 ถนนราชปรารภ",
+      "tambon": "ราชเทวี",
+      "amphur": "ราชเทวี",
+      "province": "กรุงเทพมหานคร",
+      "details": "ให้เช่าคอนโดใกล้ BTS พญาไท ถนนราชปรารภ เขตพญาไท พื้นที่ 40 ตรว. 1 ห้องนอน 1 ห้องน้ำ ห้องแต่งสวยพร้อมอยู่ ตกแต่งสไตล์โมเดิร์น เฟอร์ครบ ใกล้แหล่งอำนวยความสะดวก เช่น Century Mall, King Power, รพ.พญาไท 1 และสถานีแอร์พอร์ตเรลลิงค์พญาไท เดินทางสะดวกมาก เหมาะสำหรับคนทำงานย่านกลางเมือง",
+      "view": 75,
+      "premium_promote": true,
+      "active": true,
+      "promote_at": "2025-10-01 09:00:00",
+      "promote_end": "2025-12-31 23:59:59",
+      "price": 28000,
+      "name": "คอนโด 40 ตรว. เขตพญาไท คอนโดใกล้ BTS",
+      "area": 40,
+      "bedroom": 1,
+      "bathroom": 1,
+      "latitude": 13.7568,
+      "longitude": 100.5346
+    },
+    {
+      "real_estate_id": 10,
+      "worker_service": 16,
+      "user_id": 6,
+      "type_realestate": "ที่ดิน",
+      "type_sell": "ขายขาด",
+      "address": "แปลง C หมู่ 7",
+      "tambon": "บางบัวทอง",
+      "amphur": "นนทบุรี",
+      "province": "นนทบุรี",
+      "details": "ที่ดินขนาด 1 ไร่ เหมาะสำหรับสร้างบ้าน",
+      "view": 15,
+      "premium_promote": true,
+      "active": true,
+      "promote_at": "2025-06-15 14:00:00",
+      "promote_end": "2025-12-15 23:59:59",
+      "price": 8000000,
+      "name": "ที่ดินเปล่า 400 ตรว. อำเภอบางบัวทอง ที่ดินขนาด 1 ไร่ เหมาะสำหรับสร้างบ้าน",
+      "area": 400,
+      "bedroom": 0,
+      "bathroom": 0,
+      "latitude": 13.9314,
+      "longitude": 100.4115
+    },
+    {
+      "real_estate_id": 11,
+      "worker_service": 1,
+      "user_id": 15,
+      "type_realestate": "คอนโด",
+      "type_sell": "ขายขาด",
+      "address": "ถนนรามคำแหง ซอย 90",
+      "tambon": "สะพานสูง",
+      "amphur": "สะพานสูง",
+      "province": "กรุงเทพมหานคร",
+      "details": "ขายคอนโดใหม่ ชั้นสูง วิวโล่ง บรรยากาศสงบ ในซอยรามคำแหง 90 เขตสะพานสูง พื้นที่ 45 ตรว. 2 ห้องนอน 1 ห้องน้ำ พร้อมแอร์ เฟอร์นิเจอร์บิวท์อิน ตกแต่งพร้อมอยู่ ใกล้แหล่งอำนวยความสะดวก เช่น Big C รามคำแหง, ตลาดนัด, สนามกอล์ฟ และ MRT สายสีส้มในอนาคต เหมาะสำหรับอยู่อาศัยในระยะยาว หรือซื้อเพื่อการลงทุน",
+      "view": 10,
+      "premium_promote": false,
+      "active": true,
+      "promote_at": null,
+      "promote_end": null,
+      "price": 4000000,
+      "name": "คอนโดใหม่ 45 ตรว. เขตสะพานสูง วิวไม่บล็อก",
+      "area": 45,
+      "bedroom": 2,
+      "bathroom": 1,
+      "latitude": 13.7796,
+      "longitude": 100.6728
+    },
+    {
+      "real_estate_id": 12,
+      "worker_service": 13,
+      "user_id": 7,
+      "type_realestate": "คอนโด",
+      "type_sell": "เช่า",
+      "address": "58/9 ถนนลาดพร้าว",
+      "tambon": "ลาดพร้าว",
+      "amphur": "ลาดพร้าว",
+      "province": "กรุงเทพมหานคร",
+      "details": "ให้เช่าคอนโดตกแต่งครบ พร้อมอยู่ บนถนนลาดพร้าว เขตลาดพร้าว ใกล้ MRT ลาดพร้าว พื้นที่ 60 ตรว. 2 ห้องนอน 2 ห้องน้ำ เฟอร์นิเจอร์ครบ พร้อมเครื่องใช้ไฟฟ้า เช่น ทีวี ตู้เย็น เครื่องซักผ้า และแอร์ 3 เครื่อง ใกล้แหล่งอำนวยความสะดวก อาทิ เซ็นทรัลลาดพร้าว, ยูเนียนมอลล์, Big C ลาดพร้าว และทางด่วนรามอินทรา-อาจณรงค์",
+      "view": 80,
+      "premium_promote": false,
+      "active": true,
+      "promote_at": null,
+      "promote_end": null,
+      "price": 20000,
+      "name": "คอนโด 60 ตรว. เขตลาดพร้าว ตกแต่งครบ ใกล้ MRT",
+      "area": 60,
+      "bedroom": 2,
+      "bathroom": 2,
+      "latitude": 13.8172,
+      "longitude": 100.607
+    },
+    {
+      "real_estate_id": 13,
+      "worker_service": 14,
+      "user_id": 12,
+      "type_realestate": "คอนโด",
+      "type_sell": "ขายขาด",
+      "address": "21/7 ถนนรามคำแหง",
+      "tambon": "หัวหมาก",
+      "amphur": "บางกะปิ",
+      "province": "กรุงเทพมหานคร",
+      "details": "ขายคอนโดใหม่ ชั้นสูง วิวสระว่ายน้ำ ในซอยรามคำแหง เขตบางกะปิ พื้นที่ 45 ตรว. 2 ห้องนอน 1 ห้องน้ำ ตกแต่งสวยทันสมัย พร้อมอยู่ ใกล้ ม.รามคำแหง, ABAC, เดอะมอลล์บางกะปิ, รพ.รามคำแหง และการเดินทางด้วยเรือคลองแสนแสบ เหมาะสำหรับนักศึกษา คนทำงาน หรือผู้ที่ต้องการพักอาศัยในทำเลเมือง",
+      "view": 60,
+      "premium_promote": false,
+      "active": true,
+      "promote_at": "2025-03-01 10:00:00",
+      "promote_end": "2025-10-01 23:59:59",
+      "price": 2300000,
+      "name": "คอนโดใหม่ 45 ตรว. เขตบางกะปิ วิวสระว่ายน้ำ",
+      "area": 45,
+      "bedroom": 2,
+      "bathroom": 1,
+      "latitude": 13.7668,
+      "longitude": 100.6432
+    },
+    {
+      "real_estate_id": 14,
+      "worker_service": 16,
+      "user_id": 8,
+      "type_realestate": "คอนโด",
+      "type_sell": "เช่า",
+      "address": "14/3 ถนนวิภาวดี",
+      "tambon": "จตุจักร",
+      "amphur": "จตุจักร",
+      "province": "กรุงเทพมหานคร",
+      "details": "ให้เช่าคอนโดติด MRT จตุจักร ใกล้สวนสาธารณะและสถานที่ราชการ บนถนนวิภาวดีรังสิต เขตจตุจักร พื้นที่ 38 ตรว. 1 ห้องนอน 1 ห้องน้ำ เฟอร์นิเจอร์ครบ เครื่องใช้ไฟฟ้าครบ พร้อมเข้าอยู่ได้ทันที ใกล้สวนจตุจักร, สวนรถไฟ, SCB Park, Union Mall, เซ็นทรัลลาดพร้าว และทางด่วนพิเศษ เดินทางสะดวกมากทั้งรถไฟฟ้าและรถยนต์ส่วนตัว",
+      "view": 40,
+      "premium_promote": true,
+      "active": true,
+      "promote_at": "2025-06-10 09:00:00",
+      "promote_end": "2025-12-10 23:59:59",
+      "price": 18000,
+      "name": "คอนโดหรู 38 ตรว. เขตจตุจักร ติด MRT",
+      "area": 38,
+      "bedroom": 1,
+      "bathroom": 1,
+      "latitude": 13.8167,
+      "longitude": 100.5607
+    },
+    {
+      "real_estate_id": 15,
+      "worker_service": 2,
+      "user_id": 10,
+      "type_realestate": "คอนโด",
+      "type_sell": "เช่า",
+      "address": "99/99 ซอยลาดพร้าว 101",
+      "tambon": "คลองเจ้าคุณสิงห์",
+      "amphur": "วังทองหลาง",
+      "province": "กรุงเทพมหานคร",
+      "details": "ให้เช่าคอนโดตกแต่งครบ ซอยลาดพร้าว 101 แขวงคลองเจ้าคุณสิงห์ เขตวังทองหลาง พื้นที่ 32 ตรว. 1 ห้องนอน 1 ห้องน้ำ ห้องสภาพใหม่ เฟอร์นิเจอร์ครบ เช่น เตียง ตู้เสื้อผ้า โซฟา โต๊ะทำงาน เครื่องใช้ไฟฟ้าพร้อมอยู่ ได้แก่ แอร์ ตู้เย็น ไมโครเวฟ และเครื่องซักผ้า เดินทางสะดวก เข้า-ออกได้ทั้งถนนลาดพร้าว และถนนนวมินทร์ ใกล้ห้างสรรพสินค้า เช่น The Mall บางกะปิ, Lotus, Makro, โรงพยาบาลลาดพร้าว และรถไฟฟ้าสายสีเหลือง (สถานีลาดพร้าว 101)",
+      "view": 55,
+      "premium_promote": false,
+      "active": true,
+      "promote_at": null,
+      "promote_end": null,
+      "price": 12000,
+      "name": "คอนโด 32 ตรว. เขตวังทองหลาง พร้อมเข้าอยู่",
+      "area": 32,
+      "bedroom": 1,
+      "bathroom": 1,
+      "latitude": 13.8014,
+      "longitude": 100.6153
+    },
+    {
+      "real_estate_id": 16,
+      "worker_service": 3,
+      "user_id": 9,
+      "type_realestate": "ที่ดิน",
+      "type_sell": "ขายขาด",
+      "address": "ซอยคลองหลวง 2",
+      "tambon": "คลองหลวง",
+      "amphur": "คลองหลวง",
+      "province": "ปทุมธานี",
+      "details": "ที่ดินใกล้ ม.ธรรมศาสตร์",
+      "view": 20,
+      "premium_promote": false,
+      "active": true,
+      "promote_at": null,
+      "promote_end": null,
+      "price": 2500000,
+      "name": "ที่ดิน 200 ตรว. อ.คลองหลวง ใกล้ ม.ธรรมศาสตร์",
+      "area": 200,
+      "bedroom": 0,
+      "bathroom": 0,
+      "latitude": 14.0683,
+      "longitude": 100.6021
+    },
+    {
+      "real_estate_id": 17,
+      "worker_service": 13,
+      "user_id": 17,
+      "type_realestate": "ที่ดิน",
+      "type_sell": "ขายขาด",
+      "address": "แปลงที่ 12 ซอยเพชรเกษม 81",
+      "tambon": "หนองแขม",
+      "amphur": "หนองแขม",
+      "province": "กรุงเทพมหานคร",
+      "details": "ที่ดินจัดสรร เหมาะสร้างบ้าน",
+      "view": 18,
+      "premium_promote": true,
+      "active": true,
+      "promote_at": "2025-07-01 13:00:00",
+      "promote_end": "2025-12-31 23:59:59",
+      "price": 3500000,
+      "name": "ที่ดิน 180 ตรว. เขตหนองแขม เหมาะสร้างบ้าน",
+      "area": 180,
+      "bedroom": 0,
+      "bathroom": 0,
+      "latitude": 13.7103,
+      "longitude": 100.3421
+    },
+    {
+      "real_estate_id": 18,
+      "worker_service": 1,
+      "user_id": 11,
+      "type_realestate": "ทาวน์เฮ้าส์",
+      "type_sell": "ขายขาด",
+      "address": "234/5 หมู่บ้านสุขใจ",
+      "tambon": "คลองหนึ่ง",
+      "amphur": "คลองหลวง",
+      "province": "ปทุมธานี",
+      "details": "ขายทาวน์เฮ้าส์ 2 ชั้น หมู่บ้านสุขใจ ตำบลคลองหนึ่ง อำเภอคลองหลวง จังหวัดปทุมธานี พื้นที่ 24 ตรว. 2 ห้องนอน 2 ห้องน้ำ รีโนเวทใหม่ทั้งหลัง พร้อมที่จอดรถ 1 คัน ตัวบ้านหันทิศเหนือ ไม่ร้อน บรรยากาศร่มรื่น เหมาะสำหรับอยู่อาศัยหรือซื้อไว้ลงทุน ใกล้ ม.ธรรมศาสตร์ (รังสิต), ตลาดไท, ฟิวเจอร์พาร์ค รังสิต, โลตัส, โรงพยาบาลธรรมศาสตร์ และทางด่วนโทลล์เวย์",
+      "view": 45,
+      "premium_promote": false,
+      "active": true,
+      "promote_at": null,
+      "promote_end": null,
+      "price": 1900000,
+      "name": "ทาวน์เฮ้าส์ 24 ตรว. คลองหลวง รีโนเวทใหม่",
+      "area": 24,
+      "bedroom": 2,
+      "bathroom": 2,
+      "latitude": 14.0573,
+      "longitude": 100.6118
+    },
+    {
+      "real_estate_id": 19,
+      "worker_service": 14,
+      "user_id": 6,
+      "type_realestate": "ทาวน์เฮ้าส์",
+      "type_sell": "เช่า",
+      "address": "101/4 หมู่บ้านการเคหะ",
+      "tambon": "บางรักใหญ่",
+      "amphur": "บางบัวทอง",
+      "province": "นนทบุรี",
+      "details": "ให้เช่าทาวน์เฮ้าส์ 2 ชั้น หมู่บ้านการเคหะ บางบัวทอง จังหวัดนนทบุรี พื้นที่ 22 ตรว. 2 ห้องนอน 1 ห้องน้ำ เหมาะสำหรับครอบครัวเล็ก หรือผู้ที่ต้องการอยู่อาศัยระยะยาว ราคาย่อมเยา พื้นที่ใช้สอยครบ แยกห้องครัวและห้องรับแขก พร้อมต่อเติมหลังคาหน้าบ้าน ใกล้รถไฟฟ้าสายสีม่วง (สถานีบางรักใหญ่), เซ็นทรัลเวสต์เกต, บิ๊กซี, ตลาดบางบัวทอง และโรงพยาบาลเกษมราษฎร์",
+      "view": 33,
+      "premium_promote": true,
+      "active": true,
+      "promote_at": "2025-05-15 09:00:00",
+      "promote_end": "2025-11-15 23:59:59",
+      "price": 8500,
+      "name": "ทาวน์เฮ้าส์ 22 ตรว. บางบัวทอง ให้เช่า",
+      "area": 22,
+      "bedroom": 2,
+      "bathroom": 1,
+      "latitude": 13.933,
+      "longitude": 100.411
+    },
+    {
+      "real_estate_id": 20,
+      "worker_service": 16,
+      "user_id": 7,
+      "type_realestate": "ทาวน์เฮ้าส์",
+      "type_sell": "ขายขาด",
+      "address": "12/7 หมู่บ้านพฤกษา",
+      "tambon": "ลำลูกกา",
+      "amphur": "ลำลูกกา",
+      "province": "ปทุมธานี",
+      "details": "ขายทาวน์เฮ้าส์ 2 ชั้น หมู่บ้านพฤกษา ลำลูกกา จังหวัดปทุมธานี พื้นที่ 26 ตรว. 3 ห้องนอน 2 ห้องน้ำ พร้อมที่จอดรถ 1 คัน บ้านสภาพดี พร้อมเข้าอยู่ ต่อเติมครัวและหลังคาหน้าบ้านแล้วเรียบร้อย ทำเลดี เดินทางสะดวก ใกล้ถนนลำลูกกา คลอง 3-5, โรงเรียนเตรียมบัณฑิต, โลตัส ลำลูกกา, ตลาดวงศกร และรถไฟฟ้าสายสีเขียว (สถานีคูคต)",
+      "view": 65,
+      "premium_promote": false,
+      "active": true,
+      "promote_at": null,
+      "promote_end": null,
+      "price": 1600000,
+      "name": "ทาวน์เฮ้าส์ 26 ตรว. ลำลูกกา พร้อมอยู่ ราคาคุ้มค่า",
+      "area": 26,
+      "bedroom": 3,
+      "bathroom": 2,
+      "latitude": 13.9417,
+      "longitude": 100.6755
+    }
+  ],
+  "image_real_estate": [
+    {
+      "image_id": 1,
+      "image_path": "house1.jpg",
+      "real_estate_id": 1,
+      "title_img": 1
+    },
+    {
+      "image_id": 2,
+      "image_path": "house_bathroom1.jpg",
+      "real_estate_id": 1,
+      "title_img": 0
+    },
+    {
+      "image_id": 3,
+      "image_path": "house_living_room1.jpg",
+      "real_estate_id": 1,
+      "title_img": 0
+    },
+    {
+      "image_id": 4,
+      "image_path": "house_bedroom1.jpg",
+      "real_estate_id": 1,
+      "title_img": 0
+    },
+    {
+      "image_id": 5,
+      "image_path": "house2.jpg",
+      "real_estate_id": 2,
+      "title_img": 1
+    },
+    {
+      "image_id": 6,
+      "image_path": "house_bathroom2.jpg",
+      "real_estate_id": 2,
+      "title_img": 0
+    },
+    {
+      "image_id": 7,
+      "image_path": "house_living_room2.jpg",
+      "real_estate_id": 2,
+      "title_img": 0
+    },
+    {
+      "image_id": 8,
+      "image_path": "house_bedroom2.jpg",
+      "real_estate_id": 2,
+      "title_img": 0
+    },
+    {
+      "image_id": 9,
+      "image_path": "house3.jpg",
+      "real_estate_id": 3,
+      "title_img": 1
+    },
+    {
+      "image_id": 10,
+      "image_path": "house_bathroom3.jpg",
+      "real_estate_id": 3,
+      "title_img": 0
+    },
+    {
+      "image_id": 11,
+      "image_path": "house_living_room3.jpg",
+      "real_estate_id": 3,
+      "title_img": 0
+    },
+    {
+      "image_id": 12,
+      "image_path": "house_bedroom3.jpg",
+      "real_estate_id": 3,
+      "title_img": 0
+    },
+    {
+      "image_id": 13,
+      "image_path": "house4.jpg",
+      "real_estate_id": 4,
+      "title_img": 1
+    },
+    {
+      "image_id": 14,
+      "image_path": "house_bathroom4.jpg",
+      "real_estate_id": 4,
+      "title_img": 0
+    },
+    {
+      "image_id": 15,
+      "image_path": "house_living_room4.jpg",
+      "real_estate_id": 4,
+      "title_img": 0
+    },
+    {
+      "image_id": 16,
+      "image_path": "house_bedroom4.jpg",
+      "real_estate_id": 4,
+      "title_img": 0
+    },
+    {
+      "image_id": 17,
+      "image_path": "house5.jpg",
+      "real_estate_id": 5,
+      "title_img": 1
+    },
+    {
+      "image_id": 18,
+      "image_path": "house_bathroom5.jpg",
+      "real_estate_id": 5,
+      "title_img": 0
+    },
+    {
+      "image_id": 19,
+      "image_path": "house_living_room5.jpg",
+      "real_estate_id": 5,
+      "title_img": 0
+    },
+    {
+      "image_id": 20,
+      "image_path": "house_bedroom5.jpg",
+      "real_estate_id": 5,
+      "title_img": 0
+    },
+    {
+      "image_id": 21,
+      "image_path": "condo1.jpg",
+      "real_estate_id": 6,
+      "title_img": 1
+    },
+    {
+      "image_id": 22,
+      "image_path": "condo2.jpg",
+      "real_estate_id": 7,
+      "title_img": 1
+    },
+    {
+      "image_id": 23,
+      "image_path": "condo3.jpg",
+      "real_estate_id": 8,
+      "title_img": 1
+    },
+    {
+      "image_id": 24,
+      "image_path": "condo4.jpg",
+      "real_estate_id": 9,
+      "title_img": 1
+    },
+    {
+      "image_id": 25,
+      "image_path": "land1.jpg",
+      "real_estate_id": 10,
+      "title_img": 1
+    },
+    {
+      "image_id": 26,
+      "image_path": "condo5.jpg",
+      "real_estate_id": 11,
+      "title_img": 1
+    },
+    {
+      "image_id": 27,
+      "image_path": "condo6.jpg",
+      "real_estate_id": 12,
+      "title_img": 1
+    },
+    {
+      "image_id": 28,
+      "image_path": "condo7.jpg",
+      "real_estate_id": 13,
+      "title_img": 1
+    },
+    {
+      "image_id": 29,
+      "image_path": "condo8.jpg",
+      "real_estate_id": 14,
+      "title_img": 1
+    },
+    {
+      "image_id": 30,
+      "image_path": "condo9.jpg",
+      "real_estate_id": 15,
+      "title_img": 1
+    },
+    {
+      "image_id": 31,
+      "image_path": "land2.jpg",
+      "real_estate_id": 16,
+      "title_img": 1
+    },
+    {
+      "image_id": 32,
+      "image_path": "land3.jpg",
+      "real_estate_id": 17,
+      "title_img": 1
+    },
+    {
+      "image_id": 33,
+      "image_path": "townhouse1.jpg",
+      "real_estate_id": 18,
+      "title_img": 1
+    },
+    {
+      "image_id": 34,
+      "image_path": "townhouse_bathroom1.jpg",
+      "real_estate_id": 18,
+      "title_img": 0
+    },
+    {
+      "image_id": 35,
+      "image_path": "townhouse_living_room1.jpg",
+      "real_estate_id": 18,
+      "title_img": 0
+    },
+    {
+      "image_id": 36,
+      "image_path": "townhouse_bedroom1.jpg",
+      "real_estate_id": 18,
+      "title_img": 0
+    },
+    {
+      "image_id": 37,
+      "image_path": "townhouse2.jpg",
+      "real_estate_id": 19,
+      "title_img": 1
+    },
+    {
+      "image_id": 38,
+      "image_path": "townhouse_bathroom2.jpg",
+      "real_estate_id": 19,
+      "title_img": 0
+    },
+    {
+      "image_id": 39,
+      "image_path": "townhouse_living_room2.jpg",
+      "real_estate_id": 19,
+      "title_img": 0
+    },
+    {
+      "image_id": 40,
+      "image_path": "townhouse_bedroom2.jpg",
+      "real_estate_id": 19,
+      "title_img": 0
+    },
+    {
+      "image_id": 41,
+      "image_path": "townhouse3.jpg",
+      "real_estate_id": 20,
+      "title_img": 1
+    },
+    {
+      "image_id": 42,
+      "image_path": "townhouse_bathroom3.jpg",
+      "real_estate_id": 20,
+      "title_img": 0
+    },
+    {
+      "image_id": 43,
+      "image_path": "townhouse_living_room3.jpg",
+      "real_estate_id": 20,
+      "title_img": 0
+    },
+    {
+      "image_id": 44,
+      "image_path": "townhouse_bedroom3.jpg",
+      "real_estate_id": 20,
+      "title_img": 0
+    }
+  ],
+  "favorite_real_estate": [
+    {
+      "favorite_id": 1,
+      "user_id": 1,
+      "real_estate_id": 2
+    },
+    {
+      "favorite_id": 2,
+      "user_id": 2,
+      "real_estate_id": 1
+    }
+  ],
+  "tags": [
+    {
+      "tag_id": 1,
+      "tag_name": "รถไฟฟ้า BTS"
+    },
+    {
+      "tag_id": 2,
+      "tag_name": "ตลาดเซฟวัน"
+    },
+    {
+      "tag_id": 3,
+      "tag_name": "ห้างสรรพสินค้า"
+    },
+    {
+      "tag_id": 4,
+      "tag_name": "โครงการใหม่"
+    },
+    {
+      "tag_id": 5,
+      "tag_name": "ใกล้โรงเรียน"
+    },
+    {
+      "tag_id": 6,
+      "tag_name": "สระว่ายน้ำ"
+    },
+    {
+      "tag_id": 7,
+      "tag_name": "3ห้องนอน 2ห้องน้ำ"
+    },
+    {
+      "tag_id": 8,
+      "tag_name": "มีโรงรถ"
+    },
+    {
+      "tag_id": 9,
+      "tag_name": "ใกล้ MRT"
+    },
+    {
+      "tag_id": 10,
+      "tag_name": "ใกล้มหาวิทยาลัย"
+    },
+    {
+      "tag_id": 11,
+      "tag_name": "ใกล้ทางด่วน"
+    },
+    {
+      "tag_id": 12,
+      "tag_name": "วิวทะเล"
+    },
+    {
+      "tag_id": 13,
+      "tag_name": "ใกล้ตลาด"
+    },
+    {
+      "tag_id": 14,
+      "tag_name": "เหมาะสำหรับทำธุรกิจ"
+    },
+    {
+      "tag_id": 15,
+      "tag_name": "เดินทางสะดวก"
+    },
+    {
+      "tag_id": 16,
+      "tag_name": "พร้อมอยู่"
+    },
+    {
+      "tag_id": 17,
+      "tag_name": "ตกแต่งครบ"
+    }
+  ],
+  "tag_real_estate": [
+    {
+      "tag_real_id": 1,
+      "real_estate_id": 1,
+      "tag_id": 5
+    },
+    {
+      "tag_real_id": 2,
+      "real_estate_id": 1,
+      "tag_id": 7
+    },
+    {
+      "tag_real_id": 3,
+      "real_estate_id": 1,
+      "tag_id": 8
+    },
+    {
+      "tag_real_id": 4,
+      "real_estate_id": 2,
+      "tag_id": 1
+    },
+    {
+      "tag_real_id": 5,
+      "real_estate_id": 2,
+      "tag_id": 7
+    },
+    {
+      "tag_real_id": 6,
+      "real_estate_id": 3,
+      "tag_id": 1
+    },
+    {
+      "tag_real_id": 7,
+      "real_estate_id": 3,
+      "tag_id": 9
+    },
+    {
+      "tag_real_id": 8,
+      "real_estate_id": 5,
+      "tag_id": 6
+    },
+    {
+      "tag_real_id": 9,
+      "real_estate_id": 5,
+      "tag_id": 12
+    },
+    {
+      "tag_real_id": 10,
+      "real_estate_id": 6,
+      "tag_id": 1
+    },
+    {
+      "tag_real_id": 11,
+      "real_estate_id": 7,
+      "tag_id": 14
+    },
+    {
+      "tag_real_id": 12,
+      "real_estate_id": 8,
+      "tag_id": 9
+    },
+    {
+      "tag_real_id": 13,
+      "real_estate_id": 9,
+      "tag_id": 1
+    },
+    {
+      "tag_real_id": 14,
+      "real_estate_id": 11,
+      "tag_id": 4
+    },
+    {
+      "tag_real_id": 15,
+      "real_estate_id": 12,
+      "tag_id": 9
+    },
+    {
+      "tag_real_id": 16,
+      "real_estate_id": 12,
+      "tag_id": 17
+    },
+    {
+      "tag_real_id": 17,
+      "real_estate_id": 13,
+      "tag_id": 4
+    },
+    {
+      "tag_real_id": 18,
+      "real_estate_id": 13,
+      "tag_id": 6
+    },
+    {
+      "tag_real_id": 19,
+      "real_estate_id": 14,
+      "tag_id": 9
+    },
+    {
+      "tag_real_id": 20,
+      "real_estate_id": 15,
+      "tag_id": 3
+    },
+    {
+      "tag_real_id": 21,
+      "real_estate_id": 15,
+      "tag_id": 17
+    },
+    {
+      "tag_real_id": 22,
+      "real_estate_id": 18,
+      "tag_id": 13
+    },
+    {
+      "tag_real_id": 23,
+      "real_estate_id": 19,
+      "tag_id": 1
+    },
+    {
+      "tag_real_id": 24,
+      "real_estate_id": 20,
+      "tag_id": 1
+    },
+    {
+      "tag_real_id": 25,
+      "real_estate_id": 20,
+      "tag_id": 7
+    }
+  ]
+}

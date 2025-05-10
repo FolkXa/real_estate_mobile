@@ -1,65 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'core/app_export.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:real_estate_project/firebase_options.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
+import 'package:real_estate_project/screens/forgot_password_screen.dart';
+import 'screens/settings_screen.dart';
+import 'theme.dart';
+import 'theme_provider.dart';
+import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/sign_up.dart';
+import 'package:real_estate_project/screens/favorite_screen.dart';
+import 'package:real_estate_project/screens/my_property_screen.dart';
+import 'package:real_estate_project/screens/profile_screen.dart';
+import 'package:real_estate_project/screens/sub_category_screen.dart';
+import 'package:real_estate_project/screens/my_listing.dart';
+import 'package:real_estate_project/screens/create_listing.dart';
+import 'screens/my_estate.dart';
 
-var globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
-
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  Future.wait([
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-  ]).then((value) {
-    PrefUtils().init();
-    runApp(MyApp());
-  });
-
+  await dotenv.load(fileName: ".env"); // โหลด .env ก่อน runApp
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return Sizer(
-      builder: (context, orientation, deviceType) {
-        return BlocProvider(
-          create: (context) => ThemeBloc(
-            ThemeState(
-              themeType: PrefUtils().getThemeData(),
-            ),
-          ),
-          child: BlocBuilder<ThemeBloc, ThemeState>(
-            builder: (context, state) {
-              return MaterialApp(
-                theme: theme,
-                title: 'real_estate',
-                builder: (context, child) {
-                  return MediaQuery(
-                    data: MediaQuery.of(context).copyWith(
-                      textScaler: TextScaler.linear(1.0),
-                    ),
-                    child: child!,
-                  );
-                },
-                navigatorKey: NavigatorService.navigatorKey,
-                debugShowCheckedModeBanner: false,
-                localizationsDelegates: [
-                  AppLocalizationDelegate(),
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                locale: Locale('en', ''),
-                supportedLocales: [Locale('en', '')],
-                initialRoute: AppRoutes.initialRoute,
-                routes: AppRoutes.routes,
-              );
-            },
-          ),
-        );
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    return MaterialApp(
+      title: 'Real Estate App',
+      debugShowCheckedModeBanner: false,
+      themeMode: themeProvider.themeMode,
+      theme: MyThemes.lightTheme,
+      darkTheme: MyThemes.darkTheme,
+      initialRoute: '/',
+      routes: {
+        '/': (context) => LoginScreen(),
+        '/signup': (context) => SignupScreen(),
+        '/home': (context) => HomeScreen(),
+        '/profile': (context) => ProfileScreen(),
+        '/my_properties': (context) => MyPropertyScreen(),
+        '/favorite': (context) => FavoriteScreen(),
+        '/login': (context) => LoginScreen(),
+        '/category': (context) => SubCategoryScreen(category: "บ้านเดี่ยว"),
+        '/my-listings': (context) => const MyListingsScreen(),
+        '/my-estates': (context) => const MyEstatesScreen(),
+        '/create-listing': (context) => const CreateListingScreen(),
+        '/settings': (context) => const SettingsScreen(),
+        '/forgot-password': (context) => const ForgotPasswordScreen(),
       },
     );
   }
 }
+
