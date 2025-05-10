@@ -1,0 +1,457 @@
+{
+    "users": [
+        {
+            "user_id": 1,
+            "username": "john_doe",
+            "password": "hashed_password1",
+            "email": "john@example.com",
+            "image_path": "assets/images/agent1.jpg",
+            "role": "user",
+            "first_name": "John",
+            "last_name": "Doe",
+            "nick_name": "Johnny",
+            "phone_number": "0812345678",
+            "active": true
+        },
+        {
+            "user_id": 2,
+            "username": "jane_smith",
+            "password": "hashed_password2",
+            "email": "jane@example.com",
+            "image_path": "assets/images/agent2.jpg",
+            "role": "admin",
+            "first_name": "Jane",
+            "last_name": "Smith",
+            "nick_name": "Janey",
+            "phone_number": "0898765432",
+            "active": true
+        },
+        {
+            "user_id": 3,
+            "username": "mike_tyson",
+            "password": "hashed_password3",
+            "email": "mike@example.com",
+            "image_path": "assets/images/agent3.jpg",
+            "role": "worker",
+            "first_name": "Mike",
+            "last_name": "Tyson",
+            "nick_name": "IronMike",
+            "phone_number": "0861234567",
+            "active": true
+        }
+    ],
+    
+        "real_estate": [
+          {
+            "real_estate_id": 1,
+            "user_id": 1,
+            "type_realestate": "บ้านเดี่ยว",
+            "type_sell": "ขายขาด",
+            "address": "123/4 ถนนพระราม 9",
+            "tambon": "ห้วยขวาง",
+            "amphur": "กรุงเทพฯ",
+            "province": "กรุงเทพมหานคร",
+            "details": "บ้านสวยใกล้รถไฟฟ้า",
+            "view": 100,
+            "premium_promote": true,
+            "active": true,
+            "promote_at": "2025-01-01 10:00:00",
+            "promote_end": "2025-12-31 23:59:59",
+            "price": 5000000,
+            "name": "บ้านเดี่ยว 100 ตรว. เขตห้วยขวาง บ้านสวยใกล้รถไฟฟ้า",
+            "area": 100,
+            "bedroom": 3,
+            "bathroom": 2
+          },
+          {
+            "real_estate_id": 2,
+            "user_id": 2,
+            "type_realestate": "คอนโด",
+            "type_sell": "เช่า",
+            "address": "999/12 ซอยสุขุมวิท 50",
+            "tambon": "พระโขนง",
+            "amphur": "กรุงเทพฯ",
+            "province": "กรุงเทพมหานคร",
+            "details": "คอนโดใจกลางเมือง",
+            "view": 50,
+            "premium_promote": false,
+            "active": true,
+            "promote_at": "2025-02-01 09:00:00",
+            "promote_end": "2025-11-30 23:59:59",
+            "price": 15000,
+            "name": "คอนโด 35 ตรว. เขตคลองเตย คอนโดใจกลางเมือง",
+            "area": 35,
+            "bedroom": 2,
+            "bathroom": 1
+          },
+          {
+            "real_estate_id": 3,
+            "user_id": 3,
+            "type_realestate": "บ้านแฝด",
+            "type_sell": "ขายขาด",
+            "address": "888/2 หมู่บ้านสุขสมใจ",
+            "tambon": "บางนา",
+            "amphur": "กรุงเทพฯ",
+            "province": "กรุงเทพมหานคร",
+            "details": "บ้านแฝด 2 ชั้น พื้นที่ใช้สอยเยอะ",
+            "view": 30,
+            "premium_promote": true,
+            "active": true,
+            "promote_at": "2025-03-05 12:00:00",
+            "promote_end": "2025-09-05 23:59:59",
+            "price": 3500000,
+            "name": "บ้านแฝด 75 ตรว. เขตบางนา บ้านแฝด 2 ชั้น พื้นที่ใช้สอยเยอะ",
+            "area": 75,
+            "bedroom": 3,
+            "bathroom": 2
+          },
+          {
+            "real_estate_id": 4,
+            "user_id": 4,
+            "type_realestate": "ทาวน์โฮม",
+            "type_sell": "เช่า",
+            "address": "58/9 หมู่บ้านชวนชื่น",
+            "tambon": "ลาดพร้าว",
+            "amphur": "กรุงเทพฯ",
+            "province": "กรุงเทพมหานคร",
+            "details": "ทาวน์โฮม 3 ชั้น เหมาะสำหรับครอบครัว",
+            "view": 80,
+            "premium_promote": false,
+            "active": true,
+            "promote_at": null,
+            "promote_end": null,
+            "price": 20000,
+            "name": "ทาวน์โฮม 60 ตรว. เขตลาดพร้าว ทาวน์โฮม 3 ชั้น เหมาะสำหรับครอบครัว",
+            "area": 60,
+            "bedroom": 4,
+            "bathroom": 3
+          },
+          {
+            "real_estate_id": 5,
+            "user_id": 1,
+            "type_realestate": "บ้านหรู",
+            "type_sell": "ขายขาด",
+            "address": "45/6 ซอยสุขุมวิท 23",
+            "tambon": "วัฒนา",
+            "amphur": "กรุงเทพฯ",
+            "province": "กรุงเทพมหานคร",
+            "details": "บ้านหรูใจกลางเมือง ใกล้ BTS",
+            "view": 250,
+            "premium_promote": true,
+            "active": true,
+            "promote_at": "2025-04-10 15:00:00",
+            "promote_end": "2025-10-10 23:59:59",
+            "price": 12000000,
+            "name": "บ้านหรู 120 ตรว. เขตวัฒนา บ้านหรูใจกลางเมือง ใกล้ BTS",
+            "area": 120,
+            "bedroom": 5,
+            "bathroom": 4
+          },
+          {
+            "real_estate_id": 6,
+            "user_id": 2,
+            "type_realestate": "อาคารพาณิชย์",
+            "type_sell": "เช่า",
+            "address": "99/1 ถนนเยาวราช",
+            "tambon": "สัมพันธวงศ์",
+            "amphur": "กรุงเทพฯ",
+            "province": "กรุงเทพมหานคร",
+            "details": "อาคารพาณิชย์ 4 ชั้น เหมาะสำหรับทำธุรกิจ",
+            "view": 120,
+            "premium_promote": false,
+            "active": true,
+            "promote_at": "2025-05-01 08:30:00",
+            "promote_end": "2025-12-01 23:59:59",
+            "price": 50000,
+            "name": "อาคารพาณิชย์ 90 ตรว. เขตสัมพันธวงศ์ อาคารพาณิชย์ 4 ชั้น เหมาะสำหรับทำธุรกิจ",
+            "area": 90,
+            "bedroom": 0,
+            "bathroom": 2
+          },
+          {
+            "real_estate_id": 7,
+            "user_id": 3,
+            "type_realestate": "ที่ดินเปล่า",
+            "type_sell": "ขายขาด",
+            "address": "แปลง C หมู่ 7",
+            "tambon": "บางบัวทอง",
+            "amphur": "นนทบุรี",
+            "province": "นนทบุรี",
+            "details": "ที่ดินขนาด 1 ไร่ เหมาะสำหรับสร้างบ้าน",
+            "view": 15,
+            "premium_promote": true,
+            "active": true,
+            "promote_at": "2025-06-15 14:00:00",
+            "promote_end": "2025-12-15 23:59:59",
+            "price": 8000000,
+            "name": "ที่ดินเปล่า 400 ตรว. อำเภอบางบัวทอง ที่ดินขนาด 1 ไร่ เหมาะสำหรับสร้างบ้าน",
+            "area": 400,
+            "bedroom": 0,
+            "bathroom": 0
+          },{
+            "real_estate_id": 8,
+            "user_id": 4,
+            "type_realestate": "บ้านเดี่ยว",
+            "type_sell": "ขายขาด",
+            "address": "123/4 หมู่บ้านศิริกุล",
+            "tambon": "รามอินทรา",
+            "amphur": "กรุงเทพฯ",
+            "province": "กรุงเทพมหานคร",
+            "details": "บ้านเดี่ยว 2 ชั้น พื้นที่ใช้สอยกว้าง",
+            "view": 70,
+            "premium_promote": false,
+            "active": true,
+            "promote_at": "2025-07-20 10:00:00",
+            "promote_end": "2025-12-20 23:59:59",
+            "price": 6500000,
+            "name": "บ้านเดี่ยว 120 ตรว. เขตรามอินทรา บ้านเดี่ยว 2 ชั้น พื้นที่ใช้สอยกว้าง",
+            "area": 120,
+            "bedroom": 4,
+            "bathroom": 3
+          },
+          {
+            "real_estate_id": 9,
+            "user_id": 1,
+            "type_realestate": "คอนโดหรู",
+            "type_sell": "เช่า",
+            "address": "555/7 ถนนรัชดาภิเษก",
+            "tambon": "ดินแดง",
+            "amphur": "กรุงเทพฯ",
+            "province": "กรุงเทพมหานคร",
+            "details": "คอนโด High-Rise ใกล้ MRT",
+            "view": 95,
+            "premium_promote": true,
+            "active": true,
+            "promote_at": "2025-08-10 11:00:00",
+            "promote_end": "2025-12-10 23:59:59",
+            "price": 30000,
+            "name": "คอนโดหรู 50 ตรว. เขตดินแดง คอนโด High-Rise ใกล้ MRT",
+            "area": 50,
+            "bedroom": 2,
+            "bathroom": 2
+          },
+          {
+            "real_estate_id": 10,
+            "user_id": 2,
+            "type_realestate": "บ้านพักตากอากาศ",
+            "type_sell": "ขายขาด",
+            "address": "44/3 หมู่บ้านริมทะเล",
+            "tambon": "หัวหิน",
+            "amphur": "ประจวบคีรีขันธ์",
+            "province": "ประจวบคีรีขันธ์",
+            "details": "บ้านพักตากอากาศใกล้ชายหาด",
+            "view": 200,
+            "premium_promote": false,
+            "active": true,
+            "promote_at": "2025-09-15 09:00:00",
+            "promote_end": "2025-12-15 23:59:59",
+            "price": 15000000,
+            "name": "บ้านพักตากอากาศ 300 ตรว. อำเภอหัวหิน บ้านพักตากอากาศใกล้ชายหาด",
+            "area": 300,
+            "bedroom": 5,
+            "bathroom": 4
+          }
+        ]
+      
+      
+,
+    "image_real_estate": [
+        {
+            "image_id": 1,
+            "image_path": "assets/images/house1.jpg",
+            "real_estate_id": 1
+        },
+        {
+            "image_id": 2,
+            "image_path": "assets/images/house2.jpg",
+            "real_estate_id": 2
+        },
+        {
+            "image_id": 3,
+            "image_path": "assets/images/house3.jpg",
+            "real_estate_id": 3
+        },
+        {
+            "image_id": 4,
+            "image_path": "assets/images/house4.jpg",
+            "real_estate_id": 4
+        },
+        {
+            "image_id": 5,
+            "image_path": "assets/images/house5.jpg",
+            "real_estate_id": 5
+        },
+        {
+            "image_id": 6,
+            "image_path": "assets/images/house6.jpg",
+            "real_estate_id": 6
+        },
+        {
+            "image_id": 7,
+            "image_path": "assets/images/house7.jpg",
+            "real_estate_id": 7
+        },
+        {
+            "image_id": 8,
+            "image_path": "assets/images/house8.jpg",
+            "real_estate_id": 8
+        },
+        {
+            "image_id": 9,
+            "image_path": "assets/images/house9.jpg",
+            "real_estate_id": 9
+        },
+        {
+            "image_id": 10,
+            "image_path": "assets/images/house10.jpg",
+            "real_estate_id": 10
+        }
+]
+,
+    "favorite_real_estate": [
+        {
+            "favorite_id": 1,
+            "user_id": 1,
+            "real_estate_id": 2
+        },
+        {
+            "favorite_id": 2,
+            "user_id": 2,
+            "real_estate_id": 1
+        }
+    ],
+    "tags": [
+        {
+            "tag_id": 1,
+            "tag_name": "รถไฟฟ้า BTS"
+        },
+        {
+            "tag_id": 2,
+            "tag_name": "ตลาดเซฟวัน"
+        },
+        {
+            "tag_id": 3,
+            "tag_name": "ห้างสรรพสินค้า"
+        },{
+            "tag_id": 4,
+            "tag_name": "โครงการใหม่"
+        },
+        {
+            "tag_id": 5,
+            "tag_name": "ใกล้โรงเรียน"
+        },{
+            "tag_id": 6,
+            "tag_name": "สระว่ายน้ำ"
+        },
+        {
+            "tag_id": 7,
+            "tag_name": "3ห้องนอน 2ห้องน้ำ"
+        },{
+            "tag_id": 8,
+            "tag_name": "มีโรงรถ"
+        }
+    ],
+    "tag_real_estate": [
+        {
+            "tag_real_id": 1,
+            "tag_id": 8,
+            "real_estate_id": 2
+        },
+        {
+            "tag_real_id": 2,
+            "tag_id": 7,
+            "real_estate_id": 4
+        },
+        {
+            "tag_real_id": 3,
+            "tag_id": 5,
+            "real_estate_id": 2
+        },
+        {
+            "tag_real_id": 4,
+            "tag_id": 1,
+            "real_estate_id": 5
+        },
+        {
+            "tag_real_id": 5,
+            "tag_id": 2,
+            "real_estate_id": 4
+        },
+        {
+            "tag_real_id": 6,
+            "tag_id": 6,
+            "real_estate_id": 1
+        },
+        {
+            "tag_real_id": 7,
+            "tag_id": 7,
+            "real_estate_id": 3
+        },
+        {
+            "tag_real_id": 8,
+            "tag_id": 5,
+            "real_estate_id": 7
+        },
+        {
+            "tag_real_id": 9,
+            "tag_id": 3,
+            "real_estate_id": 5
+        },
+        {
+            "tag_real_id": 10,
+            "tag_id": 3,
+            "real_estate_id": 9
+        },
+        {
+            "tag_real_id": 11,
+            "tag_id": 8,
+            "real_estate_id": 8
+        },
+        {
+            "tag_real_id": 12,
+            "tag_id": 7,
+            "real_estate_id": 10
+        },
+        {
+            "tag_real_id": 13,
+            "tag_id": 8,
+            "real_estate_id": 4
+        },
+        {
+            "tag_real_id": 14,
+            "tag_id": 4,
+            "real_estate_id": 4
+        },
+        {
+            "tag_real_id": 15,
+            "tag_id": 5,
+            "real_estate_id": 10
+        },
+        {
+            "tag_real_id": 16,
+            "tag_id": 2,
+            "real_estate_id": 8
+        },
+        {
+            "tag_real_id": 17,
+            "tag_id": 6,
+            "real_estate_id": 8
+        },
+        {
+            "tag_real_id": 18,
+            "tag_id": 1,
+            "real_estate_id": 1
+        },
+        {
+            "tag_real_id": 19,
+            "tag_id": 6,
+            "real_estate_id": 7
+        },
+        {
+            "tag_real_id": 20,
+            "tag_id": 2,
+            "real_estate_id": 1
+        }
+]
+
+}
